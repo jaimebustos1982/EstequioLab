@@ -115,6 +115,16 @@ footer.foot a{color:inherit}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
 .hint-drag{position:absolute;top:54px;right:14px;font-size:.72rem;opacity:.55;pointer-events:none;z-index:2}
 
+/* Result bar */
+.rbar{--rc:var(--line);display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;border-radius:var(--r);padding:12px 16px;border:1.5px solid var(--rc);background:var(--surface);min-height:58px}
+.rbar.exo{--rc:var(--exo);background:color-mix(in srgb,var(--exo) 9%,var(--surface))}
+.rbar.endo{--rc:var(--endo);background:color-mix(in srgb,var(--endo) 10%,var(--surface))}
+.rbar .rk{background:var(--rc);color:#fff;border-radius:999px;padding:4px 12px;font-weight:700;font-size:.85rem;white-space:nowrap}
+.rbar .rv{font-family:var(--f-display);font-weight:800;font-size:1.45rem;color:var(--rc);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rbar .rd{color:var(--muted);font-size:.9rem;min-width:0;flex:1 1 220px}
+.rbar.pop{animation:rpop 1.3s ease-out}
+@keyframes rpop{0%{transform:scale(.97);box-shadow:0 0 0 0 transparent}35%{transform:scale(1.01);box-shadow:0 0 30px 6px color-mix(in srgb,var(--rc) 45%,transparent)}100%{transform:scale(1);box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.rbar.pop{animation:none}}
 /* Equation strip */
 .strip{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 10px}
 .term{display:flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:12px;padding:5px 8px 5px 5px;border:2px solid transparent}
@@ -241,6 +251,7 @@ th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut
         <div class="ov insp" id="insp" hidden></div>
         <div class="burst" id="burst"></div>
       </div>
+      <div class="rbar" id="rbar" aria-live="polite"><span class="rd">Balancea la ecuación y pulsa «Reaccionar» para ver el calor de reacción.</span></div>
       <div class="strip" id="strip" aria-label="Ecuación química"></div>
     </div>
 
@@ -287,6 +298,7 @@ const ELORDER=['C','H','O','N','Ca'];
 const DEF={
  glu:{n:'Glucosa',f:'C6H12O6',h:-1273.3,st:'s',role:'Azúcar fermentable. Sustrato de levaduras y bacterias y producto de la fotosíntesis.'},
  fru:{n:'Fructosa',f:'C6H12O6',h:-1265.6,st:'s',role:'Azúcar de las frutas y de la miel; isómero de la glucosa.'},
+ lacto:{n:'Lactosa',f:'C12H22O11',h:-2236.7,st:'s',role:'Azúcar de la leche, formado por galactosa y glucosa. Es el principal sólido del lactosuero. Isómero de la sacarosa.'},
  sac:{n:'Sacarosa',f:'C12H22O11',h:-2226.1,st:'s',role:'Azúcar de la caña y de la panela; disacárido de glucosa y fructosa.'},
  eth:{n:'Etanol',f:'C2H5OH',h:-277.6,st:'l',role:'Producto de la fermentación alcohólica y biocombustible.'},
  co2:{n:'Dióxido de carbono',f:'CO2',h:-393.5,st:'g',role:'Gas de fermentación, respiración y combustión.'},
@@ -294,7 +306,7 @@ const DEF={
  o2:{n:'Oxígeno',f:'O2',h:0,st:'g',role:'Aceptor de electrones en respiración y combustión. Elemento en su estado estándar: ΔH°f = 0.'},
  ch4:{n:'Metano',f:'CH4',h:-74.6,st:'g',role:'Componente energético del biogás.'},
  ace:{n:'Ácido acético',f:'CH3COOH',h:-484.3,st:'l',role:'Ácido del vinagre; se forma en la fermentación del cacao.'},
- lac:{n:'Ácido láctico',f:'C3H6O3',h:-694.1,st:'s',role:'Acidifica yogur, quesos y ensilajes.'},
+ lac:{n:'Ácido láctico',f:'C3H6O3',h:-694.1,st:'s',role:'Acidulante y conservante de alimentos; materia prima del bioplástico PLA.'},
  nh3:{n:'Amoníaco',f:'NH3',h:-45.9,st:'g',role:'Producto de la hidrólisis de la urea; puede perderse por volatilización.'},
  ure:{n:'Urea',f:'CO(NH2)2',h:-333.1,st:'s',role:'Fertilizante nitrogenado más usado.'},
  caco3:{n:'Carbonato de calcio',f:'CaCO3',h:-1207.6,st:'s',role:'Caliza; materia prima de la cal agrícola. Es un sólido iónico: aquí se muestra una unidad fórmula.'},
@@ -305,6 +317,8 @@ const G=(heavy,bonds)=>({heavy,bonds:bonds.map(b=>[b[0],b[1],b[2]||1])});
 const GRAPH={
  glu:G(['C','C','C','C','C','O','C','O','O','O','O','O'],[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6],[0,7],[1,8],[2,9],[3,10],[6,11]]),
  fru:G(['C','C','C','C','C','O','C','O','O','O','O','O'],[[1,2],[2,3],[3,4],[4,5],[5,1],[0,1],[4,6],[0,7],[1,8],[2,9],[3,10],[6,11]]),
+ lacto:G(['C','C','C','C','C','O','C','O','O','O','O','O','C','C','C','C','C','O','C','O','O','O','O'],
+   [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6],[6,7],[1,8],[2,9],[3,10],[0,11],[11,15],[12,13],[13,14],[14,15],[15,16],[16,17],[17,12],[16,18],[18,19],[12,20],[13,21],[14,22]]),
  sac:G(['C','C','C','C','C','O','C','O','O','O','O','O','C','C','C','C','C','O','C','O','O','O','O'],
    [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6],[1,7],[2,8],[3,9],[6,10],[0,11],[11,13],[13,14],[14,15],[15,16],[16,17],[17,13],[12,13],[16,18],[12,19],[14,20],[15,21],[18,22]]),
  eth:G(['C','C','O'],[[0,1],[1,2]]),
@@ -376,8 +390,8 @@ const RX=[
   ctx:'Las levaduras (Saccharomyces cerevisiae) transforman los azúcares del mosto, del jugo de fruta o de la miel de caña en etanol y CO₂ sin oxígeno. El calor liberado obliga a refrigerar los fermentadores.'},
  {id:'resp',name:'Respiración aerobia',tag:'Poscosecha · almacenamiento',c:'#0B9466',R:['glu','o2'],P:['co2','h2o'],nu:[[1,6],[6,6]],
   ctx:'Granos, frutas y café pergamino siguen vivos después de la cosecha: consumen azúcares y O₂ y liberan CO₂, agua y calor. Es la causa del calentamiento en silos y bodegas mal aireados.'},
- {id:'lac',name:'Fermentación láctica',tag:'Lácteos · ensilaje',c:'#2F80ED',R:['glu'],P:['lac'],nu:[[1],[2]],
-  ctx:'Las bacterias ácido lácticas producen ácido láctico, que baja el pH y coagula la caseína en yogur y quesos; también conserva el ensilaje. En leche el sustrato es la lactosa; aquí se usa glucosa para simplificar.'},
+ {id:'lacsu',name:'Ácido láctico desde lactosuero',tag:'Lácteos · lactosuero',c:'#2F80ED',R:['lacto','h2o'],P:['lac'],nu:[[1,1],[4]],
+  ctx:'El lactosuero que sale de la quesería lleva casi toda la lactosa de la leche y contamina si se vierte. Las bacterias ácido lácticas hidrolizan la lactosa en glucosa y galactosa y las fermentan a ácido láctico, que se usa como acidulante y para fabricar el bioplástico PLA. La ecuación global incluye el agua de la hidrólisis.'},
  {id:'ace',name:'Fermentación acética',tag:'Vinagre · cacao',c:'#B5651D',R:['eth','o2'],P:['ace','h2o'],nu:[[1,1],[1,1]],
   ctx:'Las bacterias acéticas (Acetobacter) oxidan el etanol a ácido acético con oxígeno. Ocurre en la producción de vinagre y en la fase aerobia de la fermentación del cacao, donde la masa se calienta.'},
  {id:'inv',name:'Inversión de la sacarosa',tag:'Panela · jarabes',c:'#C0399E',R:['sac','h2o'],P:['glu','fru'],nu:[[1,1],[1,1]],
@@ -738,7 +752,6 @@ function animateReaction(finalSpec,consumed,ghosts,heat){
   anim={t0:performance.now(),dur:3400,flyers,moves,fresh,old:[...consumed,...ghosts],neu,lay,col,heat,flashed:false,settled:false,exo,center,glowMat,halos:[],src:src.map(x=>x.p)};
   $('#ovR').textContent='';
   AU.reactStart(exo);
-  showBurst(heat);
 }
 function stepAnim(t,dt){
   const A=anim;const u=Math.min(1,(t-A.t0)/A.dur);
@@ -763,7 +776,7 @@ function stepAnim(t,dt){
       for(let k=0;k<200;k++){const d=sphereDir(),r=Math.random()*5,sp=.3+Math.random()*1.4;spark(C.x+d[0]*r,C.y+d[1]*r,C.z+d[2]*r,d[0]*sp,d[1]*sp,d[2]*sp,pick3(pal),1.6+Math.random()*1.4,-.35);}
       FX.light.color.setHex(0x4d7cff);}
     FX.light.position.set(C.x,C.y,C.z+3);FX.flash={t0:performance.now(),dur:1300,peak:A.exo?7:5};
-    AU.reactFlash(A.exo);}
+    AU.reactFlash(A.exo);showResult(A.heat);}
   if(u>=.84)$('#burst').classList.remove('on');
   if(u>=.8){
     if(!A.settled){A.settled=true;AU.reactSettle(A.exo);
@@ -777,19 +790,20 @@ function stepAnim(t,dt){
     A.flyers.forEach(f=>world.remove(f.m));A.old.forEach(I=>world.remove(I.g));A.halos.forEach(h=>{world.remove(h);h.material.dispose();});
     A.fresh.forEach(I=>I.g.scale.setScalar(1));
     insts=A.neu;anim=null;freeze=false;arrow.visible=true;applyLayoutFrame(A.lay);
-    $('#ovR').innerHTML=A.heat.summary||'';$('#ovR').style.color=A.exo?'#FF8A98':'#8DA8FF';
   }
 }
-function showBurst(h){
-  const b=$('#burst');const exo=h.d<0;
-  b.style.color=exo?'#FF6B7D':'#8DA8FF';
-  b.innerHTML=h.html;b.classList.add('on');
+function showResult(h){
+  const bar=$('#rbar'),exo=h.d<0,parts=h.html.split('<small>');
+  bar.className='rbar '+(exo?'exo':'endo');
+  bar.innerHTML=`<span class="rk">${exo?'Exotérmica · libera calor':'Endotérmica · absorbe calor'}</span><span class="rv">${parts[0]}</span><span class="rd">${(parts[1]||'').replace('</small>','').replace(/(\d+) mol ([A-Za-z0-9()]+)/g,(m,n,f)=>n+' mol '+fmtF(f))}</span>`;
+  void bar.offsetWidth;bar.classList.add('pop');
 }
+function resetResult(){const bar=$('#rbar');bar.className='rbar';bar.innerHTML='<span class="rd">'+(S.mode==='reactor'?'Carga el reactor y pulsa «Reaccionar» para ver la energía liberada o absorbida.':'Balancea la ecuación y pulsa «Reaccionar» para ver el calor de reacción.')+'</span>';}
 
 /* ---------- Escenas por modo ---------- */
 function lblTerm(n,sp){return `${n} ${fmtF(sp.f)}`;}
 function refreshScene(){
-  const {R,P}=species();$('#burst').classList.remove('on');$('#ovR').textContent='';
+  const {R,P}=species();$('#burst').classList.remove('on');$('#ovR').textContent='';resetResult();
   if(S.mode==='balance'){
     if(S.reacted)return;
     setScene({L:R.map((sp,i)=>({sp,n:S.coef[0][i],kind:'solid',label:lblTerm(S.coef[0][i],sp)})),
@@ -819,7 +833,7 @@ function doReact(){
     let gi=0;const quats=P.map((sp,i)=>Array.from({length:S.coef[1][i]},()=>ghosts[gi++].g.quaternion.clone()));
     const e=dH(S.coef[0],S.coef[1]);
     const fin={L:[],R:P.map((sp,i)=>({sp,n:S.coef[1][i],kind:'solid',label:lblTerm(S.coef[1][i],sp),quat:quats[i]}))};
-    animateReaction(fin,consumed,ghosts,{d:e.d,summary:`ΔH° = ${sgn(e.d)} kJ · ${e.d<0?'exotérmica':'endotérmica'}`,html:`ΔH° = ${sgn(e.d)} kJ<small>${e.d<0?'Exotérmica: libera calor':'Endotérmica: absorbe calor'} · por ${S.coef[0].map((c,i)=>c+' mol '+R[i].f).join(' + ')}</small>`});
+    animateReaction(fin,consumed,ghosts,{d:e.d,summary:`ΔH° = ${sgn(e.d)} kJ · ${e.d<0?'exotérmica':'endotérmica'}`,html:`ΔH° = ${sgn(e.d)} kJ<small>por ${S.coef[0].map((c,i)=>c+' mol '+R[i].f).join(' + ')}</small>`});
     S.reacted=true;updateReactBtn();
     $('#burst').innerHTML=$('#burst').innerHTML.replace(/(\d+) mol ([A-Za-z0-9()]+)/g,(m,n,f)=>n+' mol '+fmtF(f));
   }else if(S.mode==='reactor'){
@@ -830,7 +844,7 @@ function doReact(){
       if(left.length)excCols.push({sp,n:left.length,kind:'solid',tag:'exc',label:`${left.length} ${fmtF(sp.f)} · excedente`,lcls:'exc',from:left});});
     const fin={L:[],R:[...P.map((sp,i)=>({sp,n:rx().nu[1][i]*r.xi,kind:'solid',label:lblTerm(rx().nu[1][i]*r.xi,sp)})),...excCols]};
     const J=r.xi*dH(rx().nu[0],rx().nu[1]).d*1000/6.02214076e23;
-    animateReaction(fin,consumed,[],{d:J,summary:`${r.xi} evento${r.xi>1?'s':''} · ${J<0?'liberan':'absorben'} ${sci(Math.abs(J))} J`,html:`${r.xi} evento${r.xi>1?'s':''} de reacción<small>${J<0?'Liberan':'Absorben'} ${sci(Math.abs(J))} J · ${J<0?'exotérmica':'endotérmica'}</small>`});
+    animateReaction(fin,consumed,[],{d:J,summary:`${r.xi} evento${r.xi>1?'s':''} · ${J<0?'liberan':'absorben'} ${sci(Math.abs(J))} J`,html:`${sci(Math.abs(J))} J<small>${J<0?'liberados':'absorbidos'} por ${r.xi} evento${r.xi>1?'s':''} de reacción en este lote de moléculas</small>`});
     S.reacted=true;updateReactBtn();renderPanel();renderStrip();
   }
 }
@@ -943,13 +957,35 @@ function panelBalance(){
 }
 function bindBalance(){
   $('#bHint').onclick=()=>{
-    const st=balanceState();const {R,P}=species();
-    const els=ELORDER.filter(e=>st.t[e]&&st.t[e].L!==st.t[e].R);
-    if(!els.length){toast(st.ok&&!st.minimal?'Divide todos los coeficientes entre '+st.g+'.':'Ya está balanceada.');return;}
-    const score=e=>[...R,...P].filter(sp=>sp.counts[e]).length;
-    els.sort((a,b)=>score(a)-score(b)||(a==='H'||a==='O')-(b==='H'||b==='O'));
-    const e=els[0],v=st.t[e];
-    toast(`Empieza por ${ELNAME[e].toLowerCase()} (${e}): hay ${v.L} a la izquierda y ${v.R} a la derecha. ${e==='O'?'El O₂ ajusta el oxígeno sin mover otros elementos.':'Deja el O y el H para el final.'}`);
+    const st=balanceState(),{R,P}=species(),r=rx();
+    if(st.minimal){toast('Ya está balanceada. Pulsa «Reaccionar» para verla ocurrir.');return;}
+    if(st.ok){toast(`Está balanceada, pero no en enteros mínimos: divide todos los coeficientes entre ${st.g}.`,6500);return;}
+    // pista progresiva: si pides otra pista sin cambiar la ecuación, la siguiente es más concreta
+    const key=r.id+JSON.stringify(S.coef);
+    S.hintLvl=(S.hintKey===key)?(S.hintLvl||0)+1:0;S.hintKey=key;
+    const all=[...R.map((sp,i)=>({sp,side:0,i})),...P.map((sp,i)=>({sp,side:1,i}))];
+    const nSp=e=>all.filter(x=>x.sp.counts[e]).length;
+    const rank=e=>(e==='O'?2:e==='H'?1:0);
+    const els=ELORDER.filter(e=>st.t[e]&&st.t[e].L!==st.t[e].R).sort((a,b)=>rank(a)-rank(b)||nSp(a)-nSp(b));
+    const e=els[0],v=st.t[e],nm=`${ELNAME[e].toLowerCase()} (${e})`;
+    const cand=all.filter(x=>x.sp.counts[e]&&S.coef[x.side][x.i]!==r.nu[x.side][x.i]);
+    cand.sort((a,b)=>(a.sp.key==='o2'||a.sp.key==='h2o')-(b.sp.key==='o2'||b.sp.key==='h2o'));
+    const c=cand[0]||all.find(x=>S.coef[x.side][x.i]!==r.nu[x.side][x.i]);
+    const lado=c.side?'productos':'reactivos',f=fmtF(c.sp.f);
+    const firstStep=[...S.coef[0],...S.coef[1]].every(x=>x===1);
+    let msg;
+    if(S.hintLvl===0){
+      const why=e==='O'?(all.some(x=>x.sp.key==='o2')?'El O₂ ajusta el oxígeno sin mover ningún otro elemento: por eso va de último.':'El oxígeno se ajusta al final.')
+        :e==='H'?'El hidrógeno va después del carbono y antes del oxígeno.':'Es el elemento que aparece en menos sustancias.';
+      msg=`${firstStep?'Paso 1: empieza por el':'Siguiente paso: ajusta el'} ${nm}. Hay ${v.L} a la izquierda y ${v.R} a la derecha. ${why}`;
+    }else if(S.hintLvl===1){
+      msg=`Para el ${nm}, cambia el coeficiente de ${f} (lado de ${lado}). Cada molécula aporta ${c.sp.counts[e]} ${e}; ahora hay ${v.L} ${e} a la izquierda y ${v.R} a la derecha.`;
+    }else if(S.hintLvl===2){
+      msg=`Prueba con ${r.nu[c.side][c.i]} delante de ${f}. Luego vuelve a contar todos los elementos.`;
+    }else{
+      msg='Si sigues atascado, pulsa «Ver solución» y revisa cómo cuadra cada elemento en la tabla de átomos.';
+    }
+    toast(msg,7000);
   };
   $('#bSol').onclick=()=>{const r=rx();if(!S.solved.has(r.id))S.revealed.add(r.id);S.coef=[r.nu[0].slice(),r.nu[1].slice()];S.reacted=false;refreshScene();renderStrip();renderPanel();renderCatalog();};
   $('#bR1').onclick=()=>{S.coef=[S.coef[0].map(()=>1),S.coef[1].map(()=>1)];S.reacted=false;refreshScene();renderStrip();renderPanel();};
@@ -1076,7 +1112,7 @@ function plantUpdate(){
 }
 
 /* ---------- utilidades ---------- */
-let tt;function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3800);}
+let tt;function toast(m,ms=3800){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),ms);}
 
 init3D();selectRx(0);
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude/.test(location.host)){try{navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}}
