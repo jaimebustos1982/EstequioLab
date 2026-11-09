@@ -1,0 +1,20 @@
+EstequioLab · Balance de reacciones agroindustriales
+Copyright © 2026 Universidad Surcolombiana – Programa de Ingeniería Agroindustrial.
+Autor: Jaime Daniel Bustos Vanegas.
+Todos los derechos reservados.
+
+Se autoriza únicamente el uso en línea del software, sin costo, con fines de enseñanza
+y aprendizaje.
+
+No se autoriza, sin permiso previo y escrito del titular:
+  1. Copiar, descargar para redistribuir, modificar, traducir, descompilar o crear obras derivadas
+     a partir del código, los textos, las imágenes o los modelos implementados.
+  2. Publicar el software o partes de él en otros sitios, plataformas o repositorios.
+  3. Usarlo con fines comerciales o incorporarlo en cursos, servicios o productos de terceros.
+
+Que el código sea visible en este repositorio o en el navegador no constituye licencia de uso.
+Los componentes de terceros conservan sus propias licencias (three.js: MIT; tipografías
+Bricolage Grotesque, Atkinson Hyperlegible y JetBrains Mono: SIL Open Font License 1.1).
+Los datos termodinámicos provienen de NIST Chemistry WebBook (doi:10.18434/T4D303).
+
+Solicitudes de licencias de uso o demostraciones: jaime.bustos@usco.edu.co
