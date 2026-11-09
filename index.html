@@ -269,7 +269,7 @@ th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut
     <p>Universidad Surcolombiana · Facultad de Ingeniería · Programa de Ingeniería Agroindustrial</p>
     <p>EstequioLab · Docente D. Sc. Jaime Daniel Bustos Vanegas</p>
     <p>© 2026 Universidad Surcolombiana. Todos los derechos reservados.</p>
-    <p>Versión <b id="appver">1.4</b> · 9 nov 2026 · contenido: Ácido láctico desde lactosuero, pistas progresivas</p>
+    <p>Versión <b id="appver">1.5</b> · 9 nov 2026 · contenido: Ácido láctico desde lactosuero, pistas progresivas</p>
   </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -388,27 +388,27 @@ for(const k in DEF){
 
 const RX=[
  {id:'alc',name:'Fermentación alcohólica',tag:'Bebidas · bioetanol',c:'#D98B00',R:['glu'],P:['eth','co2'],nu:[[1],[2,2]],
-  ctx:'Las levaduras (Saccharomyces cerevisiae) transforman los azúcares del mosto, del jugo de fruta o de la miel de caña en etanol y CO₂ sin oxígeno. El calor liberado obliga a refrigerar los fermentadores.'},
+  ctx:'Las levaduras (<i>Saccharomyces cerevisiae</i>) toman la glucosa (C6H12O6) del mosto, del jugo de fruta o de la miel de caña y, sin oxígeno, la convierten en etanol (C2H5OH) y dióxido de carbono (CO2). Por cada molécula de glucosa salen dos de etanol y dos de CO2, lo que fija el rendimiento teórico en 0,511 g de etanol por gramo de glucosa. La reacción libera calor, así que los fermentadores necesitan refrigeración para mantener la levadura en su rango de temperatura. El CO2 sale como gas y puede recuperarse para bebidas carbonatadas.'},
  {id:'resp',name:'Respiración aerobia',tag:'Poscosecha · almacenamiento',c:'#0B9466',R:['glu','o2'],P:['co2','h2o'],nu:[[1,6],[6,6]],
-  ctx:'Granos, frutas y café pergamino siguen vivos después de la cosecha: consumen azúcares y O₂ y liberan CO₂, agua y calor. Es la causa del calentamiento en silos y bodegas mal aireados.'},
+  ctx:'Después de la cosecha, granos, frutas y café pergamino siguen vivos y respiran: oxidan la glucosa (C6H12O6) con el oxígeno del aire (O2) y producen dióxido de carbono (CO2), agua (H2O) y calor. Es la misma química de una combustión, pero controlada por enzimas. En silos y bodegas mal aireados ese calor se acumula, sube la temperatura y la humedad, la respiración se acelera y aparecen hongos. Por eso el grano se seca antes de almacenarlo y el almacén se airea.'},
  {id:'lacsu',name:'Ácido láctico desde lactosuero',tag:'Lácteos · lactosuero',c:'#2F80ED',R:['lacto','h2o'],P:['lac'],nu:[[1,1],[4]],
-  ctx:'El lactosuero que sale de la quesería lleva casi toda la lactosa de la leche y contamina si se vierte. Las bacterias ácido lácticas hidrolizan la lactosa en glucosa y galactosa y las fermentan a ácido láctico, que se usa como acidulante y para fabricar el bioplástico PLA. La ecuación global incluye el agua de la hidrólisis.'},
+  ctx:'El lactosuero es el líquido que queda al cuajar la leche en la quesería y conserva casi toda la lactosa (C12H22O11). Las bacterias ácido lácticas primero rompen la lactosa con una molécula de agua (H2O), gracias a la enzima β-galactosidasa, y obtienen glucosa y galactosa. Después fermentan esos dos azúcares hasta ácido láctico (C3H6O3). En la ecuación global, una lactosa más un agua dan cuatro moléculas de ácido láctico. Así el suero, que contamina si se vierte, se convierte en un acidulante para alimentos y en materia prima del bioplástico PLA.'},
  {id:'ace',name:'Fermentación acética',tag:'Vinagre · cacao',c:'#B5651D',R:['eth','o2'],P:['ace','h2o'],nu:[[1,1],[1,1]],
-  ctx:'Las bacterias acéticas (Acetobacter) oxidan el etanol a ácido acético con oxígeno. Ocurre en la producción de vinagre y en la fase aerobia de la fermentación del cacao, donde la masa se calienta.'},
+  ctx:'Las bacterias acéticas (<i>Acetobacter</i>) oxidan el etanol (C2H5OH) con el oxígeno del aire (O2) y producen ácido acético (CH3COOH) y agua (H2O). Es la base de la producción de vinagre a partir de vino o de jugos fermentados. En la fermentación del cacao ocurre en la fase aerobia, cuando se voltea la masa: la reacción libera calor, la masa se calienta y el ácido acético penetra en el grano.'},
  {id:'inv',name:'Inversión de la sacarosa',tag:'Panela · jarabes',c:'#C0399E',R:['sac','h2o'],P:['glu','fru'],nu:[[1,1],[1,1]],
-  ctx:'La sacarosa se hidroliza en glucosa y fructosa (azúcar invertido) por ácidos y calor o por la enzima invertasa. Ocurre durante la evaporación del jugo de caña y en jarabes de fruta, y reduce la cristalización.'},
+  ctx:'La sacarosa (C12H22O11) de la caña reacciona con agua (H2O) y se divide en glucosa (C6H12O6) y fructosa (C6H12O6), dos azúcares con la misma fórmula pero distinta estructura. La mezcla se llama azúcar invertido. Ocurre con calor y medio ácido durante la evaporación del jugo de caña, o con la enzima invertasa en jarabes y en la miel. El azúcar invertido cristaliza con dificultad: es útil en jarabes, pero en exceso ablanda la panela.'},
  {id:'met',name:'Digestión anaerobia',tag:'Biodigestores · residuos',c:'#5B8C2A',R:['glu'],P:['ch4','co2'],nu:[[1],[3,3]],
-  ctx:'Un consorcio microbiano degrada la materia orgánica (pulpa de café, vinazas, estiércol) hasta metano y CO₂: el biogás. Esta ecuación global resume hidrólisis, acidogénesis, acetogénesis y metanogénesis.'},
+  ctx:'En un biodigestor, un conjunto de microorganismos que viven sin oxígeno degrada la materia orgánica, aquí representada por la glucosa (C6H12O6), hasta metano (CH4) y dióxido de carbono (CO2): la mezcla de ambos es el biogás. La ecuación global resume cuatro etapas: hidrólisis, acidogénesis, acetogénesis y metanogénesis. Se aplica a la pulpa y las aguas mieles del café, a las vinazas y al estiércol, y convierte un residuo contaminante en combustible.'},
  {id:'bio',name:'Combustión de biogás',tag:'Calderas · secadores',c:'#D7263D',R:['ch4','o2'],P:['co2','h2o'],nu:[[1,2],[1,2]],
-  ctx:'El metano del biogás se quema para dar calor a calderas, hornos y secadores de café o cacao. El ΔH° usa agua líquida como producto (poder calorífico superior).'},
+  ctx:'El metano (CH4) del biogás se quema con el oxígeno del aire (O2) y produce dióxido de carbono (CO2) y agua (H2O). El calor liberado alimenta calderas, hornos y secadores de café o cacao. El ΔH° de la app toma el agua como líquido, que corresponde al poder calorífico superior. Si falta aire, la combustión queda incompleta y se forma monóxido de carbono; por eso los quemadores trabajan con exceso de aire.'},
  {id:'etc',name:'Combustión de etanol',tag:'Biocombustibles',c:'#E4572E',R:['eth','o2'],P:['co2','h2o'],nu:[[1,3],[2,3]],
-  ctx:'El bioetanol de caña se usa como combustible y como oxigenante de la gasolina. Su combustión completa produce CO₂ y agua.'},
+  ctx:'El bioetanol (C2H5OH), obtenido por fermentación de la caña o del maíz, se quema con oxígeno (O2) y produce dióxido de carbono (CO2) y agua (H2O). Se usa como combustible y como oxigenante mezclado con la gasolina. Por cada molécula de etanol se necesitan tres de O2. Es un buen ejercicio para practicar el ajuste del oxígeno al final.'},
  {id:'fot',name:'Fotosíntesis',tag:'Cultivo · materia prima',c:'#3BA55C',R:['co2','h2o'],P:['glu','o2'],nu:[[6,6],[1,6]],
-  ctx:'Las plantas fijan CO₂ con energía solar y producen azúcares, el origen de toda materia prima agroindustrial. Es la reacción inversa de la respiración: mismo |ΔH°|, signo contrario.'},
+  ctx:'Las plantas toman dióxido de carbono (CO2) del aire y agua (H2O) del suelo y, con la energía del sol, fabrican glucosa (C6H12O6) y liberan oxígeno (O2). De ahí sale toda materia prima agroindustrial: azúcares, almidón, fibra y aceites. Es la reacción inversa de la respiración: tiene el mismo valor de ΔH° con signo contrario, porque absorbe la energía que la respiración libera.'},
  {id:'ure',name:'Hidrólisis de la urea',tag:'Fertilización',c:'#4D7CFF',R:['ure','h2o'],P:['nh3','co2'],nu:[[1,1],[2,1]],
-  ctx:'La ureasa del suelo hidroliza la urea aplicada como fertilizante y libera amoníaco. Si la urea queda en superficie sin incorporar, parte del nitrógeno se pierde como NH₃.'},
+  ctx:'La urea (CO(NH2)2) es el fertilizante nitrogenado más usado. En el suelo, la enzima ureasa la hidroliza con agua (H2O) y libera amoníaco (NH3) y dióxido de carbono (CO2). Si la urea queda en la superficie sin incorporarse, parte del nitrógeno se pierde a la atmósfera como NH3; por eso se recomienda enterrarla o aplicarla antes de un riego o una lluvia.'},
  {id:'cal',name:'Calcinación de la caliza',tag:'Cal agrícola · panela',c:'#7A8B99',R:['caco3'],P:['cao','co2'],nu:[[1],[1,1]],
-  ctx:'El carbonato de calcio se descompone a alta temperatura (cerca de 900 °C) en cal viva y CO₂. La cal corrige la acidez de los suelos y clarifica el jugo de caña en la elaboración de panela.'}
+  ctx:'El carbonato de calcio (CaCO3) de la caliza se descompone a alta temperatura, cerca de 900 °C, en óxido de calcio o cal viva (CaO) y dióxido de carbono (CO2). La reacción absorbe calor, por eso se hace en hornos. La cal corrige la acidez de los suelos y se usa para clarificar el jugo de caña en la elaboración de panela.'}
 ];
 const SCOL=['#2BB3A3','#E8833A','#7B61FF','#D9488F','#3E8EDE','#9AB927'];
 
@@ -954,7 +954,7 @@ function panelBalance(){
     <p class="note" style="margin-top:8px">Masa: <b class="num">${nf(mL,2)} g</b> de reactivos frente a <b class="num">${nf(mP,2)} g</b> de productos (por mol de reacción)${Math.abs(mL-mP)<.01?' — se conserva.':'.'}</p></div>
    <div class="btns"><button class="btn" id="bHint">Pista</button><button class="btn" id="bSol">Ver solución</button><button class="btn" id="bR1">Coeficientes a 1</button><button class="btn pri" id="bRand">Reto aleatorio</button></div>
    ${energy}
-   <div class="sec"><h3>En el proceso</h3><p class="ctx">${r.ctx}</p></div>`;
+   <div class="sec"><h3>En el proceso</h3><p class="ctx">${fmtF(r.ctx)}</p></div>`;
 }
 function bindBalance(){
   $('#bHint').onclick=()=>{
@@ -976,8 +976,10 @@ function bindBalance(){
     const firstStep=[...S.coef[0],...S.coef[1]].every(x=>x===1);
     let msg;
     if(S.hintLvl===0){
-      const why=e==='O'?(all.some(x=>x.sp.key==='o2')?'El O₂ ajusta el oxígeno sin mover ningún otro elemento: por eso va de último.':'El oxígeno se ajusta al final.')
-        :e==='H'?'El hidrógeno va después del carbono y antes del oxígeno.':'Es el elemento que aparece en menos sustancias.';
+      const hasC=!!st.t.C,cOk=hasC&&st.t.C.L===st.t.C.R,hasO2=all.some(x=>x.sp.key==='o2');
+      const why=e==='O'?(hasO2?'El oxígeno se ajusta al final con el O₂, porque cambiarlo no altera ningún otro elemento.':'El oxígeno se ajusta al final porque aparece en casi todas las sustancias.')
+        :e==='H'?(hasC?(cOk?'El carbono ya cuadra, así que sigue el hidrógeno; el oxígeno queda para el final.':'Ajusta el hidrógeno antes que el oxígeno.'):'Ajusta el hidrógeno antes que el oxígeno, que queda para el final.')
+        :(firstStep?'Conviene empezar por los elementos distintos de H y O; el hidrógeno y el oxígeno se ajustan después.':`El ${ELNAME[e].toLowerCase()} todavía no cuadra: termínalo antes de pasar al hidrógeno y al oxígeno.`);
       msg=`${firstStep?'Paso 1: empieza por el':'Siguiente paso: ajusta el'} ${nm}. Hay ${v.L} a la izquierda y ${v.R} a la derecha. ${why}`;
     }else if(S.hintLvl===1){
       msg=`Para el ${nm}, cambia el coeficiente de ${f} (lado de ${lado}). Cada molécula aporta ${c.sp.counts[e]} ${e}; ahora hay ${v.L} ${e} a la izquierda y ${v.R} a la derecha.`;
