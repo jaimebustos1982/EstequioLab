@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06141A">
+<meta name="description" content="Laboratorio 3D para balancear reacciones químicas de procesos agroindustriales.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EstequioLab">
+<title>EstequioLab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<style>
+/* Layout: cámara de reacción oscura (el "microscopio") a la izquierda, panel de laboratorio a la derecha; catálogo de procesos como carrusel superior */
+:root{
+  --bg:#EAF1EE; --surface:#FFFFFF; --surface-2:#DEE9E4; --ink:#0F221C; --muted:#4C645D; --line:#C6D6CF;
+  --accent:#0B9466; --accent-ink:#FFFFFF; --amber:#D98B00; --exo:#D7263D; --endo:#1E3A8A;
+  --ok:#0B9466; --bad:#D7263D; --chamber:#06141A; --chamber-ink:#DCEFEA;
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1513; --surface:#12201C; --surface-2:#1A2B26; --ink:#E1EEE9; --muted:#93ADA5; --line:#29403A;
+  --accent:#2BD196; --accent-ink:#04140E; --amber:#F5B533; --exo:#FF5C70; --endo:#7393F2;
+  --ok:#2BD196; --bad:#FF5C70; --chamber:#040E12; --chamber-ink:#DCEFEA; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1513; --surface:#12201C; --surface-2:#1A2B26; --ink:#E1EEE9; --muted:#93ADA5; --line:#29403A;
+  --accent:#2BD196; --accent-ink:#04140E; --amber:#F5B533; --exo:#FF5C70; --endo:#7393F2;
+  --ok:#2BD196; --bad:#FF5C70; --chamber:#040E12; --chamber-ink:#DCEFEA; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 32px}
+.app{max-width:1440px;margin:0 auto;display:grid;gap:14px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+sub{font-size:.7em;vertical-align:-.25em;line-height:0}
+sup{font-size:.7em;line-height:0}
+.num{font-variant-numeric:tabular-nums}
+
+/* Header */
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand svg{flex:none}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,3.2vw,2.2rem);letter-spacing:-.02em;margin:0;line-height:1}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.92rem}
+.hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.score{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:700}
+.score b{font-family:var(--f-display);font-size:1.15rem;color:var(--accent)}
+
+/* Catalog */
+.catalog{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}
+.rx{flex:0 0 auto;width:212px;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;gap:4px;scroll-snap-align:start;transition:transform .15s,border-color .15s}
+.rx:hover{transform:translateY(-2px)}
+.rx[aria-pressed="true"]{border-color:var(--tag);box-shadow:0 0 0 3px color-mix(in srgb,var(--tag) 25%,transparent)}
+.rx .tag{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--tag)}
+.rx .nm{font-family:var(--f-display);font-weight:700;font-size:1.02rem;line-height:1.2}
+.rx .eq{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rx .done{font-size:.72rem;color:var(--ok);font-weight:700}
+
+/* Main grid */
+.main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1020px){.main{grid-template-columns:minmax(0,1.55fr) minmax(340px,1fr)}}
+.left{display:grid;gap:12px;min-width:0;align-content:start}
+
+/* Stage */
+.stage{position:relative;height:clamp(360px,60vh,640px);border-radius:20px;overflow:hidden;background:var(--chamber);color:var(--chamber-ink);touch-action:none;user-select:none}
+.stage canvas{display:block;width:100%;height:100%}
+.ov{position:absolute;z-index:2}
+.ov-title{top:12px;left:14px;right:150px;pointer-events:none}
+.ov-title .k{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;opacity:.7}
+.ov-title .t{font-family:var(--f-display);font-weight:700;font-size:1.15rem;line-height:1.15}
+.ov-tools{top:10px;right:10px;display:flex;gap:6px}
+.ib{width:36px;height:36px;border-radius:10px;border:1px solid rgba(220,239,234,.22);background:rgba(6,20,26,.6);color:var(--chamber-ink);display:grid;place-items:center;font-weight:700;font-size:1.05rem;backdrop-filter:blur(4px)}
+.ib:hover{background:rgba(40,70,80,.7)}
+.ov-act{bottom:14px;right:14px;display:flex;gap:8px}
+.go{border:none;border-radius:12px;padding:11px 18px;font-weight:700;font-family:var(--f-display);font-size:1rem;background:#2BD196;color:#04140E;box-shadow:0 6px 24px rgba(43,209,150,.35)}
+.go[disabled]{background:#33464C;color:#8FA6AD;box-shadow:none;cursor:not-allowed}
+.go.alt{background:rgba(6,20,26,.7);color:var(--chamber-ink);border:1px solid rgba(220,239,234,.25);box-shadow:none}
+.ov-scale{bottom:14px;left:14px;font-family:var(--f-mono);font-size:.72rem;pointer-events:none;opacity:.85}
+.ov-scale .bar{height:6px;border:2px solid var(--chamber-ink);border-top:none;margin-bottom:3px}
+.labels{position:absolute;inset:0;pointer-events:none;z-index:1}
+.lbl{position:absolute;transform:translate(-50%,-100%);font-family:var(--f-mono);font-weight:700;font-size:.82rem;white-space:nowrap;padding:2px 8px;border-radius:8px;background:rgba(6,20,26,.72);border:1px solid rgba(220,239,234,.18)}
+.lbl.ghost{opacity:.6;border-style:dashed}
+.lbl.exc{color:#F5B533;border-color:rgba(245,181,51,.6)}
+.burst{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.8);font-family:var(--f-display);font-weight:800;font-size:clamp(1.3rem,3vw,2rem);text-align:center;opacity:0;pointer-events:none;z-index:3;text-shadow:0 2px 18px rgba(0,0,0,.6);transition:opacity .4s,transform .6s}
+.burst.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.burst small{display:block;font-family:var(--f-body);font-weight:400;font-size:.9rem;opacity:.9}
+.insp{bottom:64px;left:14px;width:min(290px,calc(100% - 28px));background:rgba(6,20,26,.88);border:1px solid rgba(220,239,234,.22);border-radius:14px;padding:12px 14px;font-size:.86rem;backdrop-filter:blur(6px)}
+.insp h4{margin:0 0 2px;font-family:var(--f-display);font-size:1.05rem}
+.insp .f{font-family:var(--f-mono);font-size:.95rem;color:#2BD196}
+.insp dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:8px 0}
+.insp dt{opacity:.7}.insp dd{margin:0;font-variant-numeric:tabular-nums}
+.insp .x{position:absolute;top:6px;right:8px;background:none;border:none;color:inherit;font-size:1.2rem;opacity:.7}
+.legend{top:56px;left:14px;display:flex;gap:10px;flex-wrap:wrap;font-size:.72rem;pointer-events:none;opacity:.85}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.hint-drag{position:absolute;bottom:52px;right:16px;font-size:.72rem;opacity:.55;pointer-events:none;z-index:2}
+
+/* Equation strip */
+.strip{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 10px}
+.term{display:flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:12px;padding:5px 8px 5px 5px;border:2px solid transparent}
+.term .fm{font-family:var(--f-mono);font-weight:700;font-size:1.05rem}
+.term .nmS{font-size:.72rem;color:var(--muted);display:block;line-height:1.1}
+.step{display:flex;align-items:center;background:var(--surface);border-radius:9px;border:1px solid var(--line)}
+.step button{width:30px;height:32px;border:none;background:none;font-weight:700;font-size:1.1rem;color:var(--accent)}
+.step output{min-width:24px;text-align:center;font-family:var(--f-display);font-weight:800;font-size:1.2rem}
+.plus,.arrow{font-family:var(--f-display);font-weight:800;font-size:1.3rem;color:var(--muted)}
+.arrow{font-size:1.6rem;color:var(--accent)}
+.coef{font-family:var(--f-display);font-weight:800;font-size:1.2rem;color:var(--accent);min-width:14px;text-align:right}
+
+/* Panel */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px;display:grid;gap:0;align-content:start;min-width:0}
+.tabs{display:flex;gap:4px;background:var(--surface-2);border-radius:14px;padding:4px}
+.tab{flex:1;border:none;background:none;border-radius:10px;padding:9px 6px;font-weight:700;font-size:.9rem;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.pbody{padding:14px 12px 10px;display:grid;gap:16px;min-width:0}
+.sec h3{font-family:var(--f-display);font-size:1rem;margin:0 0 8px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sec h3 .s{font-family:var(--f-body);font-weight:400;font-size:.8rem;color:var(--muted)}
+.status{border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center;font-weight:700;border:1.5px solid}
+.status.bad{border-color:color-mix(in srgb,var(--bad) 40%,transparent);background:color-mix(in srgb,var(--bad) 9%,var(--surface))}
+.status.ok{border-color:color-mix(in srgb,var(--ok) 45%,transparent);background:color-mix(in srgb,var(--ok) 10%,var(--surface))}
+.status.warn{border-color:color-mix(in srgb,var(--amber) 50%,transparent);background:color-mix(in srgb,var(--amber) 10%,var(--surface))}
+.status .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:1.1rem;color:#fff}
+.status.bad .ic{background:var(--bad)}.status.ok .ic{background:var(--ok)}.status.warn .ic{background:var(--amber)}
+.status p{margin:0;font-weight:400;font-size:.86rem;color:var(--muted)}
+.tally{display:grid;gap:6px}
+.trow{display:grid;grid-template-columns:38px minmax(0,1fr) 30px minmax(0,1fr) 22px;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.el{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-family:var(--f-display);font-size:.95rem;color:#0B1513;border:2px solid rgba(0,0,0,.12)}
+.bar2{height:12px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden}
+.bar2 i{position:absolute;top:0;bottom:0;border-radius:6px}
+.bar2.l i{right:0}.bar2.r i{left:0}
+.trow .n{text-align:center;font-weight:700;font-size:.85rem}
+.trow .n span{display:block;font-size:.66rem;color:var(--muted);font-weight:400}
+.chk{font-weight:800;text-align:center}
+.thead{display:grid;grid-template-columns:38px minmax(0,1fr) 30px minmax(0,1fr) 22px;gap:8px;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.thead span:nth-child(2){text-align:right}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:11px;padding:8px 13px;font-weight:700;font-size:.88rem}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.note{font-size:.86rem;color:var(--muted);margin:0}
+.ctx{font-size:.9rem;margin:0}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:.78rem;font-weight:700}
+.chip.exo{background:color-mix(in srgb,var(--exo) 15%,transparent);color:var(--exo)}
+.chip.endo{background:color-mix(in srgb,var(--endo) 16%,transparent);color:var(--endo)}
+.chip.lim{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.chip.exc{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kv div{background:var(--surface-2);border-radius:12px;padding:9px 11px}
+.kv dt{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.kv dd{margin:2px 0 0;font-family:var(--f-display);font-weight:700;font-size:1.15rem;font-variant-numeric:tabular-nums}
+.kv dd small{font-family:var(--f-body);font-weight:400;font-size:.75rem;color:var(--muted)}
+svg text{fill:var(--ink);font-family:var(--f-body)}
+svg .mut{fill:var(--muted)}
+.edia{width:100%;height:auto;display:block}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.86rem;font-variant-numeric:tabular-nums}
+th,td{padding:6px 6px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.inrow{display:grid;grid-template-columns:minmax(0,1fr) 130px;align-items:center;gap:10px}
+.inrow label{font-size:.88rem}
+.inrow label b{font-family:var(--f-mono)}
+.inrow input{width:100%;border:1.5px solid var(--line);background:var(--surface-2);border-radius:10px;padding:8px 10px;font:inherit;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink)}
+.massbars{display:grid;gap:8px}
+.mb{display:grid;grid-template-columns:70px minmax(0,1fr);gap:8px;align-items:center;font-size:.8rem}
+.mb .track{display:flex;height:22px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.mb .track i{display:block;height:100%}
+.mlegend{display:flex;flex-wrap:wrap;gap:10px;font-size:.76rem;color:var(--muted)}
+.mlegend span{display:inline-flex;gap:5px;align-items:center}
+.mlegend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.thermo{display:grid;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:center}
+.src{font-size:.74rem;color:var(--muted);margin:0}
+.src a{color:inherit}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-weight:700;opacity:0;transition:.3s;z-index:20;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:560px){.ov-title{right:16px;top:54px}.legend{top:auto;bottom:44px}.hint-drag{display:none}.inrow{grid-template-columns:minmax(0,1fr) 110px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <header>
+    <div class="brand">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" rx="12" fill="#06141A"/><line x1="15" y1="27" x2="25" y2="18" stroke="#B8C7CF" stroke-width="3"/><line x1="25" y1="18" x2="34" y2="26" stroke="#B8C7CF" stroke-width="3"/><circle cx="15" cy="27" r="7" fill="#6E7781"/><circle cx="25" cy="18" r="6" fill="#FF4040"/><circle cx="34" cy="27" r="5" fill="#F2F5F7"/><circle cx="13" cy="36" r="3.5" fill="#2BD196"/></svg>
+      <div><h1>EstequioLab</h1><p>Balance de reacciones en procesos agroindustriales</p></div>
+    </div>
+    <div class="hdr-right">
+      <div class="score" title="Reacciones balanceadas sin ver la solución"><span>Retos resueltos</span><b id="score" class="num">0</b><span class="num" style="color:var(--muted);font-weight:400">/ 11</span></div>
+    </div>
+  </header>
+
+  <nav class="catalog" id="catalog" aria-label="Reacciones"></nav>
+
+  <div class="main">
+    <div class="left">
+      <div class="stage" id="stage">
+        <canvas id="cv" aria-label="Cámara de reacción en 3D. Arrastra para girar, rueda o botones para acercar."></canvas>
+        <div class="labels" id="labels"></div>
+        <div class="ov ov-title"><div class="k" id="ovK">Cámara de reacción</div><div class="t" id="ovT"></div></div>
+        <div class="ov legend" id="legend"></div>
+        <div class="ov ov-tools">
+          <button class="ib" id="zin" aria-label="Acercar">+</button>
+          <button class="ib" id="zout" aria-label="Alejar">−</button>
+          <button class="ib" id="zreset" aria-label="Restablecer vista">⟲</button>
+        </div>
+        <div class="ov ov-scale"><div class="bar" id="sbar" style="width:60px"></div><span id="slbl">0,5 nm</span></div>
+        <div class="hint-drag">Arrastra para girar · toca una molécula</div>
+        <div class="ov ov-act">
+          <button class="go alt" id="btnReset">Reiniciar</button>
+          <button class="go" id="btnReact">Reaccionar ▸</button>
+        </div>
+        <div class="ov insp" id="insp" hidden></div>
+        <div class="burst" id="burst"></div>
+      </div>
+      <div class="strip" id="strip" aria-label="Ecuación química"></div>
+    </div>
+
+    <section class="panel" aria-label="Laboratorio">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-balance" aria-selected="true" data-m="balance">Balancear</button>
+        <button class="tab" role="tab" id="tab-reactor" aria-selected="false" data-m="reactor">Reactor molecular</button>
+        <button class="tab" role="tab" id="tab-plant" aria-selected="false" data-m="plant">Escala de planta</button>
+      </div>
+      <div class="pbody" id="pbody"></div>
+    </section>
+  </div>
+  <p class="src">Entalpías estándar de formación a 298,15 K y 1 bar tomadas de tablas termodinámicas de referencia (NIST Chemistry WebBook, <a href="https://doi.org/10.18434/T4D303" target="_blank" rel="noopener">doi:10.18434/T4D303</a>; CRC Handbook of Chemistry and Physics). Las geometrías moleculares son aproximadas y tienen fin didáctico. Universidad Surcolombiana · Ingeniería Agroindustrial.</p>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const nf=(x,d=1)=>Number(x).toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtF=f=>f.replace(/(\d+)/g,'<sub>$1</sub>');
+const sgn=x=>(x<0?'−':x>0?'+':'')+nf(Math.abs(x),1);
+function sci(x,d=2){if(x===0)return '0';const e=Math.floor(Math.log10(Math.abs(x)));const m=x/Math.pow(10,e);return (m<0?'−':'')+nf(Math.abs(m),d)+'×10<sup>'+(e<0?'−':'')+Math.abs(e)+'</sup>';}
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+
+/* ---------- Química ---------- */
+const VAL={C:4,O:2,N:3,Ca:2,H:1};
+const MASS={C:12.011,H:1.008,O:15.999,N:14.007,Ca:40.078};
+const RAD={H:.27,C:.42,O:.40,N:.40,Ca:.64};
+const CPK={H:0xF2F5F7,C:0x707A85,O:0xFF4545,N:0x4D7CFF,Ca:0x3DDC84};
+const CPKcss={H:'#E9EEF1',C:'#8A939C',O:'#FF5A5A',N:'#6E95FF',Ca:'#3DDC84'};
+const ELNAME={C:'Carbono',H:'Hidrógeno',O:'Oxígeno',N:'Nitrógeno',Ca:'Calcio'};
+const ELORDER=['C','H','O','N','Ca'];
+
+const DEF={
+ glu:{n:'Glucosa',f:'C6H12O6',h:-1273.3,st:'s',role:'Azúcar fermentable. Sustrato de levaduras y bacterias y producto de la fotosíntesis.'},
+ fru:{n:'Fructosa',f:'C6H12O6',h:-1265.6,st:'s',role:'Azúcar de las frutas y de la miel; isómero de la glucosa.'},
+ sac:{n:'Sacarosa',f:'C12H22O11',h:-2226.1,st:'s',role:'Azúcar de la caña y de la panela; disacárido de glucosa y fructosa.'},
+ eth:{n:'Etanol',f:'C2H5OH',h:-277.6,st:'l',role:'Producto de la fermentación alcohólica y biocombustible.'},
+ co2:{n:'Dióxido de carbono',f:'CO2',h:-393.5,st:'g',role:'Gas de fermentación, respiración y combustión.'},
+ h2o:{n:'Agua',f:'H2O',h:-285.8,st:'l',role:'Medio de reacción, reactivo en hidrólisis y producto de oxidaciones.'},
+ o2:{n:'Oxígeno',f:'O2',h:0,st:'g',role:'Aceptor de electrones en respiración y combustión. Elemento en su estado estándar: ΔH°f = 0.'},
+ ch4:{n:'Metano',f:'CH4',h:-74.6,st:'g',role:'Componente energético del biogás.'},
+ ace:{n:'Ácido acético',f:'CH3COOH',h:-484.3,st:'l',role:'Ácido del vinagre; se forma en la fermentación del cacao.'},
+ lac:{n:'Ácido láctico',f:'C3H6O3',h:-694.1,st:'s',role:'Acidifica yogur, quesos y ensilajes.'},
+ nh3:{n:'Amoníaco',f:'NH3',h:-45.9,st:'g',role:'Producto de la hidrólisis de la urea; puede perderse por volatilización.'},
+ ure:{n:'Urea',f:'CO(NH2)2',h:-333.1,st:'s',role:'Fertilizante nitrogenado más usado.'},
+ caco3:{n:'Carbonato de calcio',f:'CaCO3',h:-1207.6,st:'s',role:'Caliza; materia prima de la cal agrícola. Es un sólido iónico: aquí se muestra una unidad fórmula.'},
+ cao:{n:'Óxido de calcio',f:'CaO',h:-634.9,st:'s',role:'Cal viva: encalado de suelos y clarificación del jugo de caña. Sólido iónico (unidad fórmula).'}
+};
+const ST={s:'sólido',l:'líquido',g:'gas'};
+const G=(heavy,bonds)=>({heavy,bonds:bonds.map(b=>[b[0],b[1],b[2]||1])});
+const GRAPH={
+ glu:G(['C','C','C','C','C','O','C','O','O','O','O','O'],[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6],[0,7],[1,8],[2,9],[3,10],[6,11]]),
+ fru:G(['C','C','C','C','C','O','C','O','O','O','O','O'],[[1,2],[2,3],[3,4],[4,5],[5,1],[0,1],[4,6],[0,7],[1,8],[2,9],[3,10],[6,11]]),
+ sac:G(['C','C','C','C','C','O','C','O','O','O','O','O','C','C','C','C','C','O','C','O','O','O','O'],
+   [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6],[1,7],[2,8],[3,9],[6,10],[0,11],[11,13],[13,14],[14,15],[15,16],[16,17],[17,13],[12,13],[16,18],[12,19],[14,20],[15,21],[18,22]]),
+ eth:G(['C','C','O'],[[0,1],[1,2]]),
+ co2:G(['C','O','O'],[[0,1,2],[0,2,2]]),
+ h2o:G(['O'],[]),
+ o2:G(['O','O'],[[0,1,2]]),
+ ch4:G(['C'],[]),
+ ace:G(['C','C','O','O'],[[0,1],[1,2,2],[1,3]]),
+ lac:G(['C','C','O','C','O','O'],[[0,1],[1,2],[1,3],[3,4,2],[3,5]]),
+ nh3:G(['N'],[]),
+ ure:G(['C','O','N','N'],[[0,1,2],[0,2],[0,3]]),
+ caco3:G(['Ca','O','O','C','O'],[[0,1],[0,2],[1,3],[2,3],[3,4,2]]),
+ cao:G(['Ca','O'],[[0,1,2]])
+};
+function expand(g){
+  const atoms=g.heavy.slice(), bonds=g.bonds.map(b=>b.slice());
+  const used=atoms.map(()=>0); bonds.forEach(([a,b,o])=>{used[a]+=o;used[b]+=o;});
+  g.heavy.forEach((el,i)=>{for(let k=0;k<VAL[el]-used[i];k++){atoms.push('H');bonds.push([i,atoms.length-1,1]);}});
+  return {atoms,bonds};
+}
+function relax(atoms,bonds,seed){
+  const n=atoms.length,r=rng(seed);
+  const P=atoms.map(()=>[r()*4-2,r()*4-2,r()*4-2]);
+  const nb=atoms.map(()=>[]),springs=[],linked=new Set();
+  const key=(a,b)=>a<b?a*1000+b:b*1000+a;
+  const blen=(a,b,o)=>{const A=atoms[a],B=atoms[b];let L=(A==='H'||B==='H')?0.8:(A==='Ca'||B==='Ca')?1.6:1.28;if(o===2)L*=0.9;return L;};
+  bonds.forEach(([a,b,o])=>{const L=blen(a,b,o);springs.push([a,b,L,1]);linked.add(key(a,b));nb[a].push([b,L,o]);nb[b].push([a,L,o]);});
+  nb.forEach((list,c)=>{
+    if(list.length<2||atoms[c]==='Ca')return;
+    const dbl=list.filter(x=>x[2]===2).length;
+    let th=dbl>=2?180:dbl===1?120:({C:109.5,O:104.5,N:107}[atoms[c]]||109.5);
+    th*=Math.PI/180;
+    for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){
+      const [a,La]=list[i],[b,Lb]=list[j],k=key(a,b);
+      if(linked.has(k))continue;
+      springs.push([a,b,Math.sqrt(La*La+Lb*Lb-2*La*Lb*Math.cos(th)),0.6]);linked.add(k);
+    }
+  });
+  const F=P.map(()=>[0,0,0]);
+  for(let it=0;it<1000;it++){
+    for(const f of F){f[0]=f[1]=f[2]=0;}
+    for(const [a,b,L,k] of springs){
+      const d=[P[b][0]-P[a][0],P[b][1]-P[a][1],P[b][2]-P[a][2]];const rr=Math.hypot(...d)||1e-3;const f=k*(rr-L)/rr;
+      for(let q=0;q<3;q++){F[a][q]+=f*d[q];F[b][q]-=f*d[q];}
+    }
+    for(let a=0;a<n;a++)for(let b=a+1;b<n;b++){
+      if(linked.has(key(a,b)))continue;
+      const d=[P[b][0]-P[a][0],P[b][1]-P[a][1],P[b][2]-P[a][2]];const r2=d[0]*d[0]+d[1]*d[1]+d[2]*d[2];
+      if(r2>14)continue;const rr=Math.sqrt(r2)||1e-3;const f=-0.35/(r2+0.05)/rr;
+      for(let q=0;q<3;q++){F[a][q]+=f*d[q];F[b][q]-=f*d[q];}
+    }
+    const s=it<400?0.12:0.06;
+    for(let a=0;a<n;a++)for(let q=0;q<3;q++)P[a][q]+=Math.max(-.3,Math.min(.3,F[a][q]*s));
+  }
+  const c=[0,0,0];P.forEach(p=>{for(let q=0;q<3;q++)c[q]+=p[q]/n;});
+  return P.map(p=>[p[0]-c[0],p[1]-c[1],p[2]-c[2]]);
+}
+const SP={};
+for(const k in DEF){
+  const e=expand(GRAPH[k]);const pos=relax(e.atoms,e.bonds,hash(k));
+  const counts={};e.atoms.forEach(a=>counts[a]=(counts[a]||0)+1);
+  const M=e.atoms.reduce((s,a)=>s+MASS[a],0);
+  const R=Math.max(...pos.map((p,i)=>Math.hypot(...p)+RAD[e.atoms[i]]));
+  SP[k]={...DEF[k],key:k,atoms:e.atoms,bonds:e.bonds,pos,counts,M,R};
+}
+
+const RX=[
+ {id:'alc',name:'Fermentación alcohólica',tag:'Bebidas · bioetanol',c:'#D98B00',R:['glu'],P:['eth','co2'],nu:[[1],[2,2]],
+  ctx:'Las levaduras (Saccharomyces cerevisiae) transforman los azúcares del mosto, del jugo de fruta o de la miel de caña en etanol y CO₂ sin oxígeno. El calor liberado obliga a refrigerar los fermentadores.'},
+ {id:'resp',name:'Respiración aerobia',tag:'Poscosecha · almacenamiento',c:'#0B9466',R:['glu','o2'],P:['co2','h2o'],nu:[[1,6],[6,6]],
+  ctx:'Granos, frutas y café pergamino siguen vivos después de la cosecha: consumen azúcares y O₂ y liberan CO₂, agua y calor. Es la causa del calentamiento en silos y bodegas mal aireados.'},
+ {id:'lac',name:'Fermentación láctica',tag:'Lácteos · ensilaje',c:'#2F80ED',R:['glu'],P:['lac'],nu:[[1],[2]],
+  ctx:'Las bacterias ácido lácticas producen ácido láctico, que baja el pH y coagula la caseína en yogur y quesos; también conserva el ensilaje. En leche el sustrato es la lactosa; aquí se usa glucosa para simplificar.'},
+ {id:'ace',name:'Fermentación acética',tag:'Vinagre · cacao',c:'#B5651D',R:['eth','o2'],P:['ace','h2o'],nu:[[1,1],[1,1]],
+  ctx:'Las bacterias acéticas (Acetobacter) oxidan el etanol a ácido acético con oxígeno. Ocurre en la producción de vinagre y en la fase aerobia de la fermentación del cacao, donde la masa se calienta.'},
+ {id:'inv',name:'Inversión de la sacarosa',tag:'Panela · jarabes',c:'#C0399E',R:['sac','h2o'],P:['glu','fru'],nu:[[1,1],[1,1]],
+  ctx:'La sacarosa se hidroliza en glucosa y fructosa (azúcar invertido) por ácidos y calor o por la enzima invertasa. Ocurre durante la evaporación del jugo de caña y en jarabes de fruta, y reduce la cristalización.'},
+ {id:'met',name:'Digestión anaerobia',tag:'Biodigestores · residuos',c:'#5B8C2A',R:['glu'],P:['ch4','co2'],nu:[[1],[3,3]],
+  ctx:'Un consorcio microbiano degrada la materia orgánica (pulpa de café, vinazas, estiércol) hasta metano y CO₂: el biogás. Esta ecuación global resume hidrólisis, acidogénesis, acetogénesis y metanogénesis.'},
+ {id:'bio',name:'Combustión de biogás',tag:'Calderas · secadores',c:'#D7263D',R:['ch4','o2'],P:['co2','h2o'],nu:[[1,2],[1,2]],
+  ctx:'El metano del biogás se quema para dar calor a calderas, hornos y secadores de café o cacao. El ΔH° usa agua líquida como producto (poder calorífico superior).'},
+ {id:'etc',name:'Combustión de etanol',tag:'Biocombustibles',c:'#E4572E',R:['eth','o2'],P:['co2','h2o'],nu:[[1,3],[2,3]],
+  ctx:'El bioetanol de caña se usa como combustible y como oxigenante de la gasolina. Su combustión completa produce CO₂ y agua.'},
+ {id:'fot',name:'Fotosíntesis',tag:'Cultivo · materia prima',c:'#3BA55C',R:['co2','h2o'],P:['glu','o2'],nu:[[6,6],[1,6]],
+  ctx:'Las plantas fijan CO₂ con energía solar y producen azúcares, el origen de toda materia prima agroindustrial. Es la reacción inversa de la respiración: mismo |ΔH°|, signo contrario.'},
+ {id:'ure',name:'Hidrólisis de la urea',tag:'Fertilización',c:'#4D7CFF',R:['ure','h2o'],P:['nh3','co2'],nu:[[1,1],[2,1]],
+  ctx:'La ureasa del suelo hidroliza la urea aplicada como fertilizante y libera amoníaco. Si la urea queda en superficie sin incorporar, parte del nitrógeno se pierde como NH₃.'},
+ {id:'cal',name:'Calcinación de la caliza',tag:'Cal agrícola · panela',c:'#7A8B99',R:['caco3'],P:['cao','co2'],nu:[[1],[1,1]],
+  ctx:'El carbonato de calcio se descompone a alta temperatura (cerca de 900 °C) en cal viva y CO₂. La cal corrige la acidez de los suelos y clarifica el jugo de caña en la elaboración de panela.'}
+];
+const SCOL=['#2BB3A3','#E8833A','#7B61FF','#D9488F','#3E8EDE','#9AB927'];
+
+/* ---------- Estado ---------- */
+const S={rx:0,mode:'balance',coef:null,loads:null,kg:null,medium:5000,reacted:false,revealed:new Set(),solved:new Set(),result:null};
+try{const v=JSON.parse(localStorage.getItem('estequiolab')||'{}');(v.solved||[]).forEach(x=>S.solved.add(x));}catch(e){}
+function save(){try{localStorage.setItem('estequiolab',JSON.stringify({solved:[...S.solved]}));}catch(e){}}
+const rx=()=>RX[S.rx];
+const species=()=>({R:rx().R.map(k=>SP[k]),P:rx().P.map(k=>SP[k])});
+
+function tally(coefR,coefP){
+  const {R,P}=species();const t={};
+  const add=(list,cf,side)=>list.forEach((sp,i)=>{for(const el in sp.counts){t[el]=t[el]||{L:0,R:0};t[el][side]+=sp.counts[el]*cf[i];}});
+  add(R,coefR,'L');add(P,coefP,'R');return t;
+}
+function balanceState(){
+  const t=tally(S.coef[0],S.coef[1]);
+  const all=[...S.coef[0],...S.coef[1]];
+  const ok=Object.values(t).every(v=>v.L===v.R)&&all.every(c=>c>0);
+  const g=all.reduce((a,b)=>gcd(a,b));
+  return {t,ok,minimal:ok&&g===1,g};
+}
+function dH(cR,cP){const {R,P}=species();const HR=R.reduce((s,sp,i)=>s+cR[i]*sp.h,0),HP=P.reduce((s,sp,i)=>s+cP[i]*sp.h,0);return {HR,HP,d:HP-HR};}
+
+/* ---------- Escena 3D ---------- */
+const stage=$('#stage'),canvas=$('#cv'),labelsEl=$('#labels');
+let renderer,scene,camera,world,SG,CG,MAT={},GMAT={},BMAT,GBMAT,HALO,HALOW,arrow,BG,raycaster;
+let insts=[],labelData=[],freeze=false,anim=null;
+const view={yaw:-0.25,pitch:0.12,zoom:1,dist:30,tdist:30,wx:0,twx:0};
+const V3=THREE.Vector3,UP=new V3(0,1,0);
+function init3D(){
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  scene=new THREE.Scene();BG=new THREE.Color(0x06141A);scene.background=BG.clone();
+  scene.fog=new THREE.Fog(0x06141A,40,120);
+  camera=new THREE.PerspectiveCamera(38,1,0.1,400);
+  scene.add(new THREE.HemisphereLight(0xd4ecff,0x0d1c22,0.8));
+  const dl=new THREE.DirectionalLight(0xffffff,0.85);dl.position.set(6,10,12);scene.add(dl);
+  const pl=new THREE.PointLight(0x40e0b0,0.55,90);pl.position.set(-14,-6,10);scene.add(pl);
+  const pl2=new THREE.PointLight(0xffa860,0.35,90);pl2.position.set(14,6,6);scene.add(pl2);
+  world=new THREE.Group();scene.add(world);
+  SG=new THREE.SphereGeometry(1,28,18);CG=new THREE.CylinderGeometry(1,1,1,12);
+  for(const el in CPK){MAT[el]=new THREE.MeshStandardMaterial({color:CPK[el],roughness:.32,metalness:.06});
+    GMAT[el]=new THREE.MeshBasicMaterial({color:CPK[el],transparent:true,opacity:.13,depthWrite:false});}
+  BMAT=new THREE.MeshStandardMaterial({color:0xB6C6CE,roughness:.45});
+  GBMAT=new THREE.MeshBasicMaterial({color:0x9FB4BD,transparent:true,opacity:.09,depthWrite:false});
+  HALO=new THREE.MeshBasicMaterial({color:0xF5B533,transparent:true,opacity:.10,depthWrite:false});
+  HALOW=new THREE.MeshBasicMaterial({color:0xF5B533,wireframe:true,transparent:true,opacity:.22});
+  arrow=new THREE.Group();
+  const am=new THREE.MeshStandardMaterial({color:0x2BD196,emissive:0x0b5a40,roughness:.4});
+  const sh=new THREE.Mesh(CG,am);sh.scale.set(.12,2.2,.12);sh.rotation.z=Math.PI/2;sh.position.x=-.35;arrow.add(sh);
+  const hd=new THREE.Mesh(new THREE.ConeGeometry(.4,.9,20),am);hd.rotation.z=-Math.PI/2;hd.position.x=1.1;arrow.add(hd);
+  world.add(arrow);
+  // polvo de fondo
+  const pg=new THREE.BufferGeometry();const N=500,arr=new Float32Array(N*3);const r=rng(7);
+  for(let i=0;i<N;i++){arr[i*3]=(r()-.5)*90;arr[i*3+1]=(r()-.5)*55;arr[i*3+2]=-8-r()*40;}
+  pg.setAttribute('position',new THREE.BufferAttribute(arr,3));
+  scene.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0x3f8f80,size:.12,transparent:true,opacity:.55})));
+  raycaster=new THREE.Raycaster();
+  new ResizeObserver(resize).observe(stage);resize();
+  bindPointer();
+  requestAnimationFrame(loop);
+}
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();fitCamera();}
+function buildMol(sp,kind){
+  const g=new THREE.Group(),atoms=[];const ghost=kind==='ghost';
+  sp.pos.forEach((p,i)=>{const el=sp.atoms[i];const m=new THREE.Mesh(SG,ghost?GMAT[el]:MAT[el]);m.scale.setScalar(RAD[el]);m.position.set(p[0],p[1],p[2]);m.userData.el=el;g.add(m);atoms.push(m);});
+  sp.bonds.forEach(([a,b,o])=>{
+    const pa=new V3(...sp.pos[a]),pb=new V3(...sp.pos[b]);const dir=pb.clone().sub(pa);const len=dir.length();dir.normalize();
+    const q=new THREE.Quaternion().setFromUnitVectors(UP,dir);
+    let perp=new V3(0,0,1).cross(dir);if(perp.lengthSq()<1e-3)perp=new V3(1,0,0).cross(dir);perp.normalize().multiplyScalar(.12);
+    const offs=o===2?[perp,perp.clone().negate()]:[new V3()];
+    offs.forEach(off=>{const c=new THREE.Mesh(CG,ghost?GBMAT:BMAT);const rr=o===2?.065:.095;c.scale.set(rr,len,rr);c.quaternion.copy(q);c.position.copy(pa).add(pb).multiplyScalar(.5).add(off);g.add(c);});
+  });
+  g.userData.atoms=atoms;
+  return g;
+}
+function addHalo(g,sp){const h=new THREE.Mesh(SG,HALO);h.scale.setScalar(sp.R+.25);g.add(h);const w=new THREE.Mesh(SG,HALOW);w.scale.setScalar(sp.R+.3);g.add(w);g.userData.halo=[h,w];}
+function layoutSide(cols,side){
+  const maxRows=3,gap=1.2;
+  const blocks=cols.map(c=>{const cell=2*c.sp.R+.55;const nc=Math.max(1,Math.ceil(c.n/maxRows));const nr=Math.max(1,Math.min(c.n,maxRows));return {c,cell,nc,nr,w:nc*cell,h:nr*cell};});
+  const W=blocks.reduce((s,b)=>s+b.w,0)+gap*Math.max(0,blocks.length-1);
+  let x=side==='L'?-2.3-W:2.3;const items=[];
+  blocks.forEach(b=>{
+    for(let k=0;k<b.c.n;k++){const col=Math.floor(k/maxRows),row=k%maxRows;const rows=Math.min(maxRows,b.c.n-col*maxRows);
+      items.push({...b.c,k,side,pos:new V3(x+b.cell*(col+.5),((rows-1)/2-row)*b.cell,0),from:b.c.from?b.c.from[k]:null,quat:b.c.quat?b.c.quat[k]:null});}
+    b.cx=x+b.w/2;b.top=b.h/2;b.side=side;x+=b.w+gap;
+  });
+  return {items,blocks,W,H:blocks.length?Math.max(...blocks.map(b=>b.h)):2};
+}
+function computeLayout(spec){
+  const L=layoutSide(spec.L||[],'L'),R=layoutSide(spec.R||[],'R');
+  const minx=L.blocks.length?-2.3-L.W:-3,maxx=R.blocks.length?2.3+R.W:3;
+  return {items:[...L.items,...R.items],blocks:[...L.blocks,...R.blocks],minx,maxx,H:Math.max(L.H,R.H)};
+}
+function randQuat(seed){const r=rng(seed);const e=new THREE.Euler(r()*6.28,r()*6.28,r()*6.28);return new THREE.Quaternion().setFromEuler(e);}
+function spinAxis(seed){const r=rng(seed+99);return new V3(r()-.5,r()-.5,r()-.5).normalize();}
+let seedCounter=1;
+function makeInst(it){
+  const g=buildMol(it.sp,it.kind);g.position.copy(it.pos);
+  g.quaternion.copy(it.quat||randQuat(seedCounter*31+it.k));
+  const I={g,sp:it.sp,side:it.side,kind:it.kind,tag:it.tag||null,base:it.pos.clone(),axis:spinAxis(seedCounter++),phase:Math.random()*6.28,rid:it.rid};
+  g.traverse(o=>{o.userData.inst=I;});
+  if(I.tag==='exc')addHalo(g,it.sp);
+  return I;
+}
+let lastLayout=null;
+function setScene(spec){
+  anim=null;freeze=false;
+  insts.forEach(I=>world.remove(I.g));insts=[];
+  const lay=computeLayout(spec);lastLayout=lay;
+  lay.items.forEach(it=>{const I=makeInst(it);world.add(I.g);insts.push(I);});
+  applyLayoutFrame(lay);
+}
+function applyLayoutFrame(lay){
+  view.twx=-(lay.minx+lay.maxx)/2;
+  labelData=lay.blocks.map(b=>({x:b.cx,y:b.top+.75,html:b.c.label,cls:b.c.lcls||''}));
+  labelsEl.innerHTML=labelData.map(l=>`<div class="lbl ${l.cls}">${l.html}</div>`).join('');
+  fitCamera();
+}
+function fitCamera(){
+  if(!lastLayout||!camera)return;
+  const halfW=(lastLayout.maxx-lastLayout.minx)/2+1.4,halfH=lastLayout.H/2+2.2;
+  const t=Math.tan(camera.fov*Math.PI/360);
+  view.tdist=Math.max(halfH/t,halfW/(t*camera.aspect),9)+2;
+}
+function bindPointer(){
+  const pts=new Map();let drag=null,moved=0,pinch0=0;
+  stage.addEventListener('pointerdown',e=>{if(e.target!==canvas)return;canvas.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});drag={x:e.clientX,y:e.clientY};moved=0;
+    if(pts.size===2){const [a,b]=[...pts.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);}});
+  stage.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2){const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch0){view.zoom=Math.min(3,Math.max(.5,view.zoom*d/pinch0));}pinch0=d;moved=99;return;}
+    if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;moved+=Math.abs(dx)+Math.abs(dy);
+    view.yaw+=dx*.008;view.pitch=Math.max(-1.2,Math.min(1.2,view.pitch+dy*.006));drag={x:e.clientX,y:e.clientY};});
+  const up=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);if(pts.size<2)pinch0=0;
+    if(moved<6&&e.target===canvas)pick(e);drag=null;};
+  stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+  canvas.addEventListener('wheel',e=>{e.preventDefault();view.zoom=Math.min(3,Math.max(.5,view.zoom*(e.deltaY>0?.92:1.08)));},{passive:false});
+  $('#zin').onclick=()=>view.zoom=Math.min(3,view.zoom*1.2);
+  $('#zout').onclick=()=>view.zoom=Math.max(.5,view.zoom/1.2);
+  $('#zreset').onclick=()=>{view.zoom=1;view.yaw=-.25;view.pitch=.12;};
+}
+function pick(e){
+  const r=canvas.getBoundingClientRect();
+  raycaster.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},camera);
+  const objs=[];insts.forEach(I=>{if(I.g.visible)objs.push(...I.g.userData.atoms);});
+  const hit=raycaster.intersectObjects(objs,false)[0];
+  if(!hit){$('#insp').hidden=true;return;}
+  const I=hit.object.userData.inst;showInspector(I.sp,I);
+}
+function showInspector(sp,I){
+  const comp=ELORDER.filter(e=>sp.counts[e]).map(e=>`<span style="color:${CPKcss[e]}">${e}</span>×${sp.counts[e]}`).join(' · ');
+  const st=I.kind==='ghost'?'<p style="margin:6px 0 0;opacity:.75">Silueta: lugar que ocuparán los productos.</p>':I.tag==='exc'?'<p style="margin:6px 0 0;color:#F5B533">Excedente: no encontró pareja para reaccionar.</p>':'';
+  $('#insp').innerHTML=`<button class="x" aria-label="Cerrar">×</button><h4>${sp.n}</h4><div class="f">${fmtF(sp.f)}</div>
+   <dl><dt>Átomos</dt><dd>${comp}</dd><dt>Masa molar</dt><dd>${nf(sp.M,2)} g/mol</dd><dt>ΔH°f</dt><dd>${sgn(sp.h)} kJ/mol (${ST[sp.st]})</dd></dl>
+   <div style="opacity:.85">${sp.role}</div>${st}`;
+  $('#insp').hidden=false;$('#insp .x').onclick=()=>$('#insp').hidden=true;
+}
+const tmpV=new V3();
+function loop(t){
+  requestAnimationFrame(loop);
+  const ts=t/1000;
+  view.dist+=(view.tdist/view.zoom-view.dist)*.08;view.wx+=(view.twx-view.wx)*.08;
+  world.position.x=0;
+  const cx=Math.sin(view.yaw)*Math.cos(view.pitch)*view.dist,cy=Math.sin(view.pitch)*view.dist,cz=Math.cos(view.yaw)*Math.cos(view.pitch)*view.dist;
+  world.position.set(view.wx,0,0);
+  camera.position.set(cx,cy,cz);camera.lookAt(0,0,0);
+  if(!freeze){
+    insts.forEach(I=>{const q=new THREE.Quaternion().setFromAxisAngle(I.axis,.004*(I.kind==='ghost'?.5:1));I.g.quaternion.premultiply(q);
+      I.g.position.y=I.base.y+Math.sin(ts*1.3+I.phase)*.07;I.g.position.x=I.base.x+Math.cos(ts*1.1+I.phase)*.04;});
+  }
+  arrow.position.y=Math.sin(ts*2)*.05;
+  if(anim)stepAnim(t);
+  renderer.render(scene,camera);
+  // etiquetas
+  const w=stage.clientWidth,h=stage.clientHeight;world.updateMatrixWorld();
+  const kids=labelsEl.children;
+  labelData.forEach((l,i)=>{const el=kids[i];if(!el)return;tmpV.set(l.x,l.y,0).applyMatrix4(world.matrixWorld).project(camera);
+    el.style.left=((tmpV.x+1)/2*w)+'px';el.style.top=((1-tmpV.y)/2*h)+'px';el.style.visibility=tmpV.z<1?'visible':'hidden';});
+  // escala
+  const ppu=h/(2*view.dist*Math.tan(camera.fov*Math.PI/360));
+  const px=4.1*ppu;$('#sbar').style.width=px.toFixed(0)+'px';
+  const mag=(px*0.26e-3)/(0.5e-9);const e=Math.floor(Math.log10(mag));
+  $('#slbl').innerHTML='0,5 nm · aumento ≈ '+sci(mag,0);
+  scene.background.lerp(BG,.04);
+}
+
+/* ---------- Animación de reacción ---------- */
+function localAtomPos(I,m){return m.position.clone().applyQuaternion(I.g.quaternion).add(I.g.position);}
+function animateReaction(finalSpec,consumed,ghosts,heat){
+  freeze=true;$('#insp').hidden=true;
+  const lay=computeLayout(finalSpec);
+  const neu=[],fresh=[],moves=[];
+  lay.items.forEach(it=>{
+    if(it.from){const I=it.from;moves.push({I,s:I.g.position.clone(),e:it.pos.clone()});I.base=it.pos.clone();I.side=it.side;I.tag=it.tag;if(it.tag==='exc'&&!I.g.userData.halo)addHalo(I.g,I.sp);neu.push(I);}
+    else{const I=makeInst(it);I.g.visible=false;world.add(I.g);neu.push(I);fresh.push(I);}
+  });
+  const src=[];consumed.forEach(I=>I.g.userData.atoms.forEach(m=>src.push({el:m.userData.el,p:localAtomPos(I,m),used:false})));
+  const flyers=[];
+  fresh.forEach(I=>I.g.userData.atoms.forEach(m=>{
+    const b=localAtomPos(I,m);let best=null,bd=1e9;
+    for(const s of src){if(s.used||s.el!==m.userData.el)continue;const d=s.p.distanceToSquared(b);if(d<bd){bd=d;best=s;}}
+    if(!best)return;best.used=true;
+    const fm=new THREE.Mesh(SG,MAT[best.el]);fm.scale.setScalar(RAD[best.el]);fm.position.copy(best.p);world.add(fm);
+    const c=best.p.clone().add(b).multiplyScalar(.5);c.y+=2+Math.random()*3;c.z+=(Math.random()-.5)*6;
+    flyers.push({m:fm,a:best.p,b,c,j:Math.random()*6.28});
+  }));
+  consumed.forEach(I=>{I.g.visible=false;});
+  labelsEl.innerHTML='';labelData=[];
+  lastLayout=lay;view.twx=-(lay.minx+lay.maxx)/2;fitCamera();
+  const col=new THREE.Color(heat.d<0?0x5a0d18:0x0d1f5c);
+  anim={t0:performance.now(),dur:2800,flyers,moves,fresh,old:[...consumed,...ghosts],neu,lay,col,heat,flashed:false};
+  showBurst(heat);
+}
+function ease(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
+function stepAnim(t){
+  const A=anim;const u=Math.min(1,(t-A.t0)/A.dur);
+  const pa=Math.min(1,u/.18),pb=Math.max(0,Math.min(1,(u-.18)/.62));
+  A.flyers.forEach(f=>{
+    if(pb===0){const j=.12*pa;f.m.position.set(f.a.x+Math.sin(t*.03+f.j)*j,f.a.y+Math.cos(t*.027+f.j)*j,f.a.z);}
+    else{const s=ease(pb),q=1-s;f.m.position.set(q*q*f.a.x+2*q*s*f.c.x+s*s*f.b.x,q*q*f.a.y+2*q*s*f.c.y+s*s*f.b.y,q*q*f.a.z+2*q*s*f.c.z+s*s*f.b.z);}
+  });
+  A.moves.forEach(m=>{m.I.g.position.lerpVectors(m.s,m.e,ease(pb));});
+  if(!A.flashed&&u>.5){A.flashed=true;scene.background.copy(A.col);}
+  if(u>=.8){A.fresh.forEach(I=>{I.g.visible=true;const k=1+.15*Math.max(0,1-(u-.8)/.2);I.g.scale.setScalar(k);});A.flyers.forEach(f=>f.m.visible=false);}
+  if(u>=1){
+    A.flyers.forEach(f=>world.remove(f.m));A.old.forEach(I=>world.remove(I.g));
+    A.fresh.forEach(I=>I.g.scale.setScalar(1));
+    insts=A.neu;anim=null;freeze=false;applyLayoutFrame(A.lay);
+    setTimeout(()=>$('#burst').classList.remove('on'),1600);
+  }
+}
+function showBurst(h){
+  const b=$('#burst');const exo=h.d<0;
+  b.style.color=exo?'#FF6B7D':'#8DA8FF';
+  b.innerHTML=h.html;b.classList.add('on');
+}
+
+/* ---------- Escenas por modo ---------- */
+function lblTerm(n,sp){return `${n} ${fmtF(sp.f)}`;}
+function refreshScene(){
+  const {R,P}=species();$('#burst').classList.remove('on');
+  if(S.mode==='balance'){
+    if(S.reacted)return;
+    setScene({L:R.map((sp,i)=>({sp,n:S.coef[0][i],kind:'solid',label:lblTerm(S.coef[0][i],sp)})),
+              R:P.map((sp,i)=>({sp,n:S.coef[1][i],kind:'ghost',label:lblTerm(S.coef[1][i],sp),lcls:'ghost'}))});
+  }else if(S.mode==='reactor'){
+    if(S.reacted)return;
+    setScene({L:R.map((sp,i)=>({sp,n:S.loads[i],kind:'solid',label:lblTerm(S.loads[i],sp)})),R:[]});
+  }else{
+    const nu=rx().nu;
+    setScene({L:R.map((sp,i)=>({sp,n:nu[0][i],kind:'solid',label:lblTerm(nu[0][i],sp)})),R:P.map((sp,i)=>({sp,n:nu[1][i],kind:'solid',label:lblTerm(nu[1][i],sp)}))});
+  }
+  updateReactBtn();
+}
+function updateReactBtn(){
+  const b=$('#btnReact');
+  if(S.mode==='plant'){b.hidden=true;$('#btnReset').hidden=true;return;}
+  b.hidden=false;$('#btnReset').hidden=false;
+  if(S.reacted){b.disabled=true;b.textContent='Reaccionó ✓';return;}
+  if(S.mode==='balance'){const st=balanceState();b.disabled=!st.ok;b.textContent=st.ok?'Reaccionar ▸':'Balancea primero';}
+  else{const r=reactorCalc();b.disabled=r.xi<1;b.textContent=r.xi<1?'Faltan reactivos':'Reaccionar ▸';}
+}
+function doReact(){
+  if(anim)return;const {R,P}=species();
+  if(S.mode==='balance'){
+    const st=balanceState();if(!st.ok)return;
+    const consumed=insts.filter(I=>I.side==='L'),ghosts=insts.filter(I=>I.kind==='ghost');
+    let gi=0;const quats=P.map((sp,i)=>Array.from({length:S.coef[1][i]},()=>ghosts[gi++].g.quaternion.clone()));
+    const e=dH(S.coef[0],S.coef[1]);
+    const fin={L:[],R:P.map((sp,i)=>({sp,n:S.coef[1][i],kind:'solid',label:lblTerm(S.coef[1][i],sp),quat:quats[i]}))};
+    animateReaction(fin,consumed,ghosts,{d:e.d,html:`ΔH° = ${sgn(e.d)} kJ<small>${e.d<0?'Exotérmica: libera calor':'Endotérmica: absorbe calor'} · por ${S.coef[0].map((c,i)=>c+' mol '+R[i].f).join(' + ')}</small>`});
+    S.reacted=true;updateReactBtn();
+    $('#burst').innerHTML=$('#burst').innerHTML.replace(/(\d+) mol ([A-Za-z0-9()]+)/g,(m,n,f)=>n+' mol '+fmtF(f));
+  }else if(S.mode==='reactor'){
+    const r=reactorCalc();if(r.xi<1)return;
+    const byKey={};insts.filter(I=>I.side==='L').forEach(I=>{(byKey[I.sp.key]=byKey[I.sp.key]||[]).push(I);});
+    const consumed=[],excCols=[];
+    R.forEach((sp,i)=>{const list=byKey[sp.key]||[];const use=rx().nu[0][i]*r.xi;consumed.push(...list.slice(0,use));const left=list.slice(use);
+      if(left.length)excCols.push({sp,n:left.length,kind:'solid',tag:'exc',label:`${left.length} ${fmtF(sp.f)} · excedente`,lcls:'exc',from:left});});
+    const fin={L:[],R:[...P.map((sp,i)=>({sp,n:rx().nu[1][i]*r.xi,kind:'solid',label:lblTerm(rx().nu[1][i]*r.xi,sp)})),...excCols]};
+    const J=r.xi*dH(rx().nu[0],rx().nu[1]).d*1000/6.02214076e23;
+    animateReaction(fin,consumed,[],{d:J,html:`${r.xi} evento${r.xi>1?'s':''} de reacción<small>${J<0?'Liberan':'Absorben'} ${sci(Math.abs(J))} J · ${J<0?'exotérmica':'endotérmica'}</small>`});
+    S.reacted=true;updateReactBtn();renderPanel();renderStrip();
+  }
+}
+$('#btnReact').onclick=doReact;
+$('#btnReset').onclick=()=>{S.reacted=false;refreshScene();renderPanel();renderStrip();};
+
+/* ---------- Catálogo ---------- */
+function eqText(r){const {R,P}={R:r.R.map(k=>SP[k]),P:r.P.map(k=>SP[k])};
+  const side=(l,c)=>l.map((sp,i)=>(c[i]>1?c[i]+' ':'')+sp.f).join(' + ');return side(R,r.nu[0])+' → '+side(P,r.nu[1]);}
+function renderCatalog(){
+  $('#catalog').innerHTML=RX.map((r,i)=>`<button class="rx" style="--tag:${r.c}" aria-pressed="${i===S.rx}" data-i="${i}">
+   <span class="tag">${r.tag}</span><span class="nm">${r.name}</span>
+   <span class="eq">${S.solved.has(r.id)||S.revealed.has(r.id)?fmtF(eqText(r)):r.R.map(k=>fmtF(SP[k].f)).join(' + ')+' → ?'}</span>
+   ${S.solved.has(r.id)?'<span class="done">✓ Resuelta</span>':''}</button>`).join('');
+  $('#catalog').querySelectorAll('.rx').forEach(b=>b.onclick=()=>selectRx(+b.dataset.i));
+  $('#score').textContent=S.solved.size;
+}
+function selectRx(i){
+  S.rx=i;const r=rx();
+  S.coef=[r.R.map(()=>1),r.P.map(()=>1)];
+  const k=r.nu[0].every((v,j)=>v*2+(j?1:0)<=14)?2:1;
+  S.loads=r.nu[0].map((v,j)=>v*k+(j?1:0));
+  S.kg=r.R.map((key,j)=>j===0?1000:+(1000/SP[r.R[0]].M*r.nu[0][j]/r.nu[0][0]*SP[key].M*1.2).toFixed(1));
+  S.medium=5000;S.reacted=false;
+  $('#ovT').textContent=r.name;$('#insp').hidden=true;
+  const els=ELORDER.filter(e=>[...r.R,...r.P].some(k=>SP[k].counts[e]));
+  $('#legend').innerHTML=els.map(e=>`<span><i style="background:${CPKcss[e]}"></i>${e}</span>`).join('');
+  renderCatalog();refreshScene();renderStrip();renderPanel();
+  const btn=$('#catalog').children[i];if(btn&&btn.scrollIntoView)btn.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});
+}
+
+/* ---------- Ecuación ---------- */
+function stepper(id,val,min,max){return `<div class="step"><button data-s="${id}" data-d="-1" aria-label="Disminuir">−</button><output class="num">${val}</output><button data-s="${id}" data-d="1" aria-label="Aumentar">+</button></div>`;}
+function renderStrip(){
+  const {R,P}=species();const r=rx();let h='';
+  const term=(sp,inner)=>`<div class="term">${inner}<div><span class="fm">${fmtF(sp.f)}</span><span class="nmS">${sp.n}</span></div></div>`;
+  if(S.mode==='balance'){
+    h+=R.map((sp,i)=>term(sp,stepper('c0_'+i,S.coef[0][i],1,12))).join('<span class="plus">+</span>');
+    h+='<span class="arrow">→</span>';
+    h+=P.map((sp,i)=>term(sp,stepper('c1_'+i,S.coef[1][i],1,12))).join('<span class="plus">+</span>');
+  }else if(S.mode==='reactor'){
+    h+=R.map((sp,i)=>term(sp,stepper('l_'+i,S.loads[i],0,14))).join('<span class="plus">+</span>');
+    h+='<span class="arrow">→</span>';
+    const res=S.reacted?reactorCalc():null;
+    h+=P.map((sp,i)=>term(sp,`<span class="coef num">${res?r.nu[1][i]*res.xi:'?'}</span>`)).join('<span class="plus">+</span>');
+  }else{
+    h+=R.map((sp,i)=>term(sp,r.nu[0][i]>1?`<span class="coef">${r.nu[0][i]}</span>`:'')).join('<span class="plus">+</span>');
+    h+='<span class="arrow">→</span>';
+    h+=P.map((sp,i)=>term(sp,r.nu[1][i]>1?`<span class="coef">${r.nu[1][i]}</span>`:'')).join('<span class="plus">+</span>');
+  }
+  $('#strip').innerHTML=h;
+  $('#strip').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{
+    const [kind,idx]=b.dataset.s.split('_');const d=+b.dataset.d;
+    if(kind==='c0'||kind==='c1'){const s=kind==='c0'?0:1;S.coef[s][idx]=Math.min(12,Math.max(1,S.coef[s][idx]+d));S.reacted=false;onCoefChange();}
+    else{S.loads[idx]=Math.min(14,Math.max(0,S.loads[idx]+d));S.reacted=false;refreshScene();renderStrip();renderPanel();}
+  });
+}
+function onCoefChange(){
+  refreshScene();renderStrip();renderPanel();
+  const st=balanceState(),r=rx();
+  if(st.minimal&&!S.solved.has(r.id)&&!S.revealed.has(r.id)){S.solved.add(r.id);save();renderCatalog();toast('¡Balanceada! Pulsa «Reaccionar» para verla ocurrir.');}
+}
+
+/* ---------- Panel ---------- */
+function setMode(m){
+  S.mode=m;S.reacted=false;
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.m===m));
+  $('#ovK').textContent=m==='balance'?'Cámara de reacción · balanceo':m==='reactor'?'Reactor molecular · lote de moléculas':'Ecuación de referencia';
+  refreshScene();renderStrip();renderPanel();
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setMode(t.dataset.m));
+
+function renderPanel(){
+  const b=$('#pbody');
+  if(S.mode==='balance')b.innerHTML=panelBalance();
+  else if(S.mode==='reactor')b.innerHTML=panelReactor();
+  else{b.innerHTML=panelPlant();bindPlant();plantUpdate();}
+  if(S.mode==='balance')bindBalance();
+}
+function panelBalance(){
+  const st=balanceState(),r=rx();const els=ELORDER.filter(e=>st.t[e]);
+  const maxN=Math.max(...els.map(e=>Math.max(st.t[e].L,st.t[e].R)),1);
+  let status;
+  if(st.minimal)status=`<div class="status ok"><span class="ic">✓</span><div>Ecuación balanceada<p>Cada elemento tiene el mismo número de átomos a ambos lados. La masa se conserva.</p></div></div>`;
+  else if(st.ok)status=`<div class="status warn"><span class="ic">÷</span><div>Balanceada, pero simplificable<p>Todos los coeficientes son divisibles entre ${st.g}. Escríbela con los enteros más pequeños.</p></div></div>`;
+  else{const bad=els.filter(e=>st.t[e].L!==st.t[e].R);status=`<div class="status bad"><span class="ic">!</span><div>Aún no está balanceada<p>Descuadre en ${bad.map(e=>ELNAME[e].toLowerCase()).join(', ')}. Usa los botones − y + de la ecuación.</p></div></div>`;}
+  const rows=els.map(e=>{const v=st.t[e];const ok=v.L===v.R;const c=CPKcss[e];
+    return `<div class="trow"><span class="el" style="background:${c}">${e}</span>
+     <div class="bar2 l"><i style="width:${v.L/maxN*100}%;background:${c}"></i></div>
+     <span class="n num">${v.L}<span>vs</span>${v.R}</span>
+     <div class="bar2 r"><i style="width:${v.R/maxN*100}%;background:${c}"></i></div>
+     <span class="chk" style="color:${ok?'var(--ok)':'var(--bad)'}">${ok?'✓':'✗'}</span></div>`;}).join('');
+  const {R,P}=species();
+  const mL=R.reduce((s,sp,i)=>s+S.coef[0][i]*sp.M,0),mP=P.reduce((s,sp,i)=>s+S.coef[1][i]*sp.M,0);
+  let energy;
+  if(st.ok){const e=dH(S.coef[0],S.coef[1]);
+    energy=`<div class="sec"><h3>Calor de reacción <span class="chip ${e.d<0?'exo':'endo'}">${e.d<0?'Exotérmica':'Endotérmica'}</span></h3>
+     ${energySVG(e.HR,e.HP)}
+     <p class="note">ΔH°<sub>r</sub> = Σν·ΔH°<sub>f</sub>(productos) − Σν·ΔH°<sub>f</sub>(reactivos) = <b class="num">${sgn(e.HP)} − (${sgn(e.HR)}) = ${sgn(e.d)} kJ</b> por la ecuación tal como está escrita.${st.minimal?'':' Si multiplicas los coeficientes, ΔH° se multiplica igual.'}</p></div>`;}
+  else energy=`<div class="sec"><h3>Calor de reacción</h3><p class="note">Balancea la ecuación para calcular ΔH°. Sin balance no hay cuentas de energía confiables.</p></div>`;
+  return `${status}
+   <div class="sec"><h3>Átomos por elemento <span class="s">reactivos · productos</span></h3>
+    <div class="thead"><span></span><span>Reactivos</span><span></span><span>Productos</span><span></span></div>
+    <div class="tally">${rows}</div>
+    <p class="note" style="margin-top:8px">Masa: <b class="num">${nf(mL,2)} g</b> de reactivos frente a <b class="num">${nf(mP,2)} g</b> de productos (por mol de reacción)${Math.abs(mL-mP)<.01?' — se conserva.':'.'}</p></div>
+   <div class="btns"><button class="btn" id="bHint">Pista</button><button class="btn" id="bSol">Ver solución</button><button class="btn" id="bR1">Coeficientes a 1</button><button class="btn pri" id="bRand">Reto aleatorio</button></div>
+   ${energy}
+   <div class="sec"><h3>En el proceso</h3><p class="ctx">${r.ctx}</p></div>`;
+}
+function bindBalance(){
+  $('#bHint').onclick=()=>{
+    const st=balanceState();const {R,P}=species();
+    const els=ELORDER.filter(e=>st.t[e]&&st.t[e].L!==st.t[e].R);
+    if(!els.length){toast(st.ok&&!st.minimal?'Divide todos los coeficientes entre '+st.g+'.':'Ya está balanceada.');return;}
+    const score=e=>[...R,...P].filter(sp=>sp.counts[e]).length;
+    els.sort((a,b)=>score(a)-score(b)||(a==='H'||a==='O')-(b==='H'||b==='O'));
+    const e=els[0],v=st.t[e];
+    toast(`Empieza por ${ELNAME[e].toLowerCase()} (${e}): hay ${v.L} a la izquierda y ${v.R} a la derecha. ${e==='O'?'El O₂ ajusta el oxígeno sin mover otros elementos.':'Deja el O y el H para el final.'}`);
+  };
+  $('#bSol').onclick=()=>{const r=rx();if(!S.solved.has(r.id))S.revealed.add(r.id);S.coef=[r.nu[0].slice(),r.nu[1].slice()];S.reacted=false;refreshScene();renderStrip();renderPanel();renderCatalog();};
+  $('#bR1').onclick=()=>{S.coef=[S.coef[0].map(()=>1),S.coef[1].map(()=>1)];S.reacted=false;refreshScene();renderStrip();renderPanel();};
+  $('#bRand').onclick=()=>{const pool=RX.map((r,i)=>i).filter(i=>i!==S.rx&&!S.solved.has(RX[i].id));const list=pool.length?pool:RX.map((r,i)=>i).filter(i=>i!==S.rx);selectRx(list[Math.floor(Math.random()*list.length)]);toast('Nuevo reto: '+rx().name);};
+}
+function energySVG(HR,HP){
+  const d=HP-HR,span=Math.max(Math.abs(d),1);
+  const top=Math.max(HR,HP)+span*.38,bot=Math.min(HR,HP)-span*.12;
+  const Y=v=>28+(top-v)/(top-bot)*140;
+  const yR=Y(HR),yP=Y(HP),yT=Y(Math.max(HR,HP)+span*.28);
+  const col=d<0?'var(--exo)':'var(--endo)';
+  const ah=d<0?`M300,${yR+2} L300,${yP-8} M294,${yP-12} L300,${yP-2} L306,${yP-12}`:`M300,${yR-2} L300,${yP+8} M294,${yP+12} L300,${yP+2} L306,${yP+12}`;
+  return `<svg class="edia" viewBox="0 0 340 200" role="img" aria-label="Diagrama de entalpía">
+   <line x1="30" y1="14" x2="30" y2="186" stroke="var(--line)" stroke-width="1.5"/>
+   <text x="34" y="14" font-size="10" class="mut">H (kJ)</text>
+   <path d="M118,${yR} C150,${yR} 148,${yT} 172,${yT} C196,${yT} 194,${yP} 226,${yP}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>
+   <text x="172" y="${yT-6}" font-size="9.5" text-anchor="middle" class="mut">Eₐ (ilustrativa)</text>
+   <line x1="44" y1="${yR}" x2="118" y2="${yR}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+   <line x1="226" y1="${yP}" x2="288" y2="${yP}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+   <text x="81" y="${yR+(yR<yP?-8:17)}" font-size="11" text-anchor="middle" font-weight="700">Reactivos</text>
+   <text x="81" y="${yR+(yR<yP?-20:29)}" font-size="10" text-anchor="middle" class="mut">${sgn(HR)}</text>
+   <text x="257" y="${yP+(yP<yR?-8:17)}" font-size="11" text-anchor="middle" font-weight="700">Productos</text>
+   <text x="257" y="${yP+(yP<yR?-20:29)}" font-size="10" text-anchor="middle" class="mut">${sgn(HP)}</text>
+   <line x1="288" y1="${yR}" x2="306" y2="${yR}" stroke="${col}" stroke-dasharray="2 3"/>
+   <path d="${ah}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round"/>
+   <text x="312" y="${(yR+yP)/2+4}" font-size="11" font-weight="700" style="fill:${col}">ΔH</text>
+  </svg>`;
+}
+function reactorCalc(){
+  const nu=rx().nu[0];const xi=Math.min(...nu.map((v,i)=>Math.floor(S.loads[i]/v)));
+  const lim=nu.map((v,i)=>S.loads[i]/v);const mn=Math.min(...lim);
+  return {xi:Math.max(0,xi),limIdx:lim.map((x,i)=>x===mn?i:-1).filter(i=>i>=0),left:nu.map((v,i)=>S.loads[i]-v*Math.max(0,xi))};
+}
+function panelReactor(){
+  const r=rx(),{R,P}=species(),c=reactorCalc();const e=dH(r.nu[0],r.nu[1]);
+  const perEvent=e.d*1000/6.02214076e23;
+  const lim=c.xi>0||R.length>1?c.limIdx.map(i=>`<span class="chip lim">${fmtF(R[i].f)}</span>`).join(' '):'—';
+  const left=R.map((sp,i)=>c.left[i]>0?`<span class="chip exc">${c.left[i]} ${fmtF(sp.f)}</span>`:'').filter(Boolean).join(' ')||'<span class="note">Ninguno</span>';
+  const prods=P.map((sp,i)=>`${r.nu[1][i]*c.xi} ${fmtF(sp.f)}`).join(' + ');
+  return `<div class="sec"><h3>Carga el reactor molécula a molécula</h3>
+    <p class="note">Ajusta cuántas moléculas de cada reactivo entran con los botones de la ecuación. La reacción ocurre en eventos completos: cada evento consume los reactivos en la proporción de la ecuación balanceada. Lo que sobra es excedente.</p></div>
+   <div class="kv">
+    <div><dt>Eventos de reacción ξ</dt><dd class="num">${c.xi}</dd></div>
+    <div><dt>Reactivo límite</dt><dd>${lim}</dd></div>
+    <div><dt>Productos</dt><dd style="font-size:.95rem">${c.xi?prods:'—'}</dd></div>
+    <div><dt>Excedente</dt><dd style="font-size:.95rem">${left}</dd></div>
+   </div>
+   <div class="sec"><h3>Energía a escala molecular <span class="chip ${e.d<0?'exo':'endo'}">${e.d<0?'Exotérmica':'Endotérmica'}</span></h3>
+    <div class="kv">
+     <div><dt>Por evento</dt><dd>${sci(perEvent)} <small>J</small></dd></div>
+     <div><dt>Este lote (${c.xi} eventos)</dt><dd>${sci(perEvent*c.xi||0)} <small>J</small></dd></div>
+     <div><dt>Por mol de reacción</dt><dd class="num">${sgn(e.d)} <small>kJ</small></dd></div>
+    </div>
+    <p class="note" style="margin-top:8px">Un mol de reacción son 6,022×10<sup>23</sup> eventos (número de Avogadro). Por eso la energía de una sola molécula es diminuta y la de una planta se mide en megajulios.</p></div>
+   <div class="sec"><h3>Prueba esto</h3><p class="ctx">${R.length>1?`Carga exactamente la proporción ${r.nu[0].map((v,i)=>v+' '+fmtF(R[i].f)).join(' : ')} y verás que no queda excedente. Luego agrega una molécula de más de un solo reactivo.`:`Con un solo reactivo no hay reactivo límite que elegir: toda la carga reacciona si alcanza para un evento completo.`}</p></div>`;
+}
+function plantCalc(){
+  const r=rx(),{R,P}=species();
+  const n=R.map((sp,i)=>Math.max(0,S.kg[i])*1000/sp.M);
+  const ratio=n.map((v,i)=>v/r.nu[0][i]);const xi=Math.min(...ratio);
+  const limIdx=ratio.indexOf(xi);
+  const exc=R.map((sp,i)=>({sp,kmol:(n[i]-r.nu[0][i]*xi)/1000,kg:(n[i]-r.nu[0][i]*xi)*sp.M/1000}));
+  const prod=P.map((sp,i)=>({sp,kmol:r.nu[1][i]*xi/1000,kg:r.nu[1][i]*xi*sp.M/1000}));
+  const e=dH(r.nu[0],r.nu[1]);const Q=xi*e.d/1000; // MJ
+  const dT=-Q*1000/(Math.max(1,S.medium)*4.18);
+  return {n,xi,limIdx,exc,prod,Q,dT,e};
+}
+function panelPlant(){
+  const {R}=species();
+  return `<div class="sec"><h3>Del reactor molecular a la planta</h3>
+    <p class="note">Escribe las masas que entran al equipo. La app calcula el reactivo límite, los productos, los excedentes y el calor que debes retirar o suministrar.</p></div>
+   <div class="sec" style="display:grid;gap:8px">
+    ${R.map((sp,i)=>`<div class="inrow"><label for="kg${i}"><b>${fmtF(sp.f)}</b> ${sp.n} (kg)</label><input id="kg${i}" type="number" min="0" step="any" inputmode="decimal" value="${S.kg[i]}"></div>`).join('')}
+    <div class="inrow"><label for="kgm">Masa que absorbe el calor (kg de agua o mosto, c<sub>p</sub> ≈ 4,18 kJ/kg·K)</label><input id="kgm" type="number" min="1" step="any" inputmode="decimal" value="${S.medium}"></div>
+   </div>
+   <div id="pres"></div>`;
+}
+function bindPlant(){
+  species().R.forEach((sp,i)=>{$('#kg'+i).oninput=e=>{S.kg[i]=parseFloat(e.target.value)||0;plantUpdate();};});
+  $('#kgm').oninput=e=>{S.medium=parseFloat(e.target.value)||1;plantUpdate();};
+}
+function plantUpdate(){
+  const c=plantCalc(),{R,P}=species();
+  const inKg=R.reduce((s,sp,i)=>s+Math.max(0,S.kg[i]),0);
+  const outKg=c.prod.reduce((s,p)=>s+p.kg,0)+c.exc.reduce((s,x)=>s+x.kg,0);
+  const allSp=[...R,...P];const col=k=>SCOL[allSp.findIndex(s=>s.key===k)%SCOL.length];
+  const rows=[...R.map((sp,i)=>`<tr><td>${fmtF(sp.f)} ${i===c.limIdx&&c.xi>0?'<span class="chip lim">límite</span>':c.exc[i].kg>1e-6?'<span class="chip exc">exceso</span>':''}</td><td>${nf(S.kg[i],1)}</td><td>${nf(c.n[i]/1000,3)}</td><td>${nf(c.exc[i].kg,1)}</td></tr>`),
+    ...c.prod.map(p=>`<tr><td>${fmtF(p.sp.f)}</td><td>—</td><td>${nf(p.kmol,3)}</td><td>${nf(p.kg,1)}</td></tr>`)].join('');
+  const seg=(list)=>list.filter(x=>x.kg>0).map(x=>`<i style="width:${x.kg/Math.max(inKg,outKg,1e-9)*100}%;background:${col(x.sp.key)}" title="${x.sp.n}: ${nf(x.kg,1)} kg"></i>`).join('');
+  const inList=R.map((sp,i)=>({sp,kg:Math.max(0,S.kg[i])}));
+  const outList=[...c.prod,...c.exc.map(x=>({sp:x.sp,kg:x.kg}))];
+  // termómetro
+  const T=25+c.dT;const Tc=Math.max(0,Math.min(100,T));const frac=Tc/100;
+  const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));const cc=mix([30,58,138],[215,38,61],frac);
+  const tubeH=140,fillH=tubeH*frac;
+  const warn=T>100?'<p class="note" style="color:var(--exo)">Por encima de 100 °C: en la práctica el agua herviría. Este calor se aprovecha para generar vapor o debe retirarse con un sistema de enfriamiento.</p>':T<0?'<p class="note" style="color:var(--endo)">Por debajo de 0 °C: el medio no podría suministrar tanto calor; hace falta una fuente externa (horno, vapor).</p>':'';
+  $('#pres').innerHTML=`
+   <div class="kv">
+    <div><dt>Avance ξ</dt><dd class="num">${nf(c.xi/1000,3)} <small>kmol</small></dd></div>
+    <div><dt>Calor de reacción</dt><dd class="num" style="color:${c.Q<0?'var(--exo)':'var(--endo)'}">${sgn(c.Q)} <small>MJ</small></dd></div>
+    <div><dt>Por kg de ${fmtF(R[c.limIdx].f)}</dt><dd class="num">${sgn(c.e.d*rx().nu[0][c.limIdx]===0?0:c.e.d/rx().nu[0][c.limIdx]/R[c.limIdx].M*1000)} <small>kJ/kg</small></dd></div>
+   </div>
+   <div class="sec"><h3>Balance de materia <span class="s">kg</span></h3>
+    <div class="tbl"><table><thead><tr><th>Especie</th><th>Entra</th><th>kmol</th><th>Sale</th></tr></thead><tbody>${rows}</tbody>
+     <tfoot><tr><th>Total</th><th class="num">${nf(inKg,1)}</th><th></th><th class="num">${nf(outKg,1)}</th></tr></tfoot></table></div>
+    <div class="massbars" style="margin-top:10px">
+     <div class="mb"><span>Entradas</span><div class="track">${seg(inList)}</div></div>
+     <div class="mb"><span>Salidas</span><div class="track">${seg(outList)}</div></div>
+     <div class="mlegend">${allSp.map(sp=>`<span><i style="background:${col(sp.key)}"></i>${fmtF(sp.f)}</span>`).join('')}</div>
+    </div>
+    <p class="note" style="margin-top:6px">La masa que entra es igual a la que sale (productos + excedentes): ley de conservación de la masa.</p></div>
+   <div class="sec"><h3>Efecto térmico en el equipo <span class="chip ${c.Q<0?'exo':'endo'}">${c.Q<0?'Hay que retirar calor':'Hay que suministrar calor'}</span></h3>
+    <div class="thermo">
+     <svg viewBox="0 0 60 200" width="60" role="img" aria-label="Termómetro: ${nf(T,1)} grados Celsius">
+      <rect x="22" y="14" width="16" height="${tubeH+14}" rx="8" fill="var(--surface-2)" stroke="var(--line)"/>
+      <rect x="25" y="${14+tubeH-fillH+6}" width="10" height="${fillH+10}" rx="5" fill="rgb(${cc})"/>
+      <circle cx="30" cy="176" r="16" fill="rgb(${cc})" stroke="var(--line)"/>
+      <text x="44" y="22" font-size="9" class="mut">100</text><text x="44" y="${14+tubeH+8}" font-size="9" class="mut">0</text>
+     </svg>
+     <div><div style="font-family:var(--f-display);font-weight:800;font-size:2rem;color:rgb(${cc})" class="num">${nf(T,1)} °C</div>
+      <p class="note">Si el medio parte de 25 °C y no hay intercambio con el exterior, su temperatura cambia en <b class="num">${sgn(c.dT)} K</b>. ΔT = −Q / (m·c<sub>p</sub>).</p>${warn}</div>
+    </div></div>
+   <div class="sec"><h3>Diagrama de entalpía <span class="s">por mol de reacción</span></h3>${energySVG(c.e.HR,c.e.HP)}</div>`;
+}
+
+/* ---------- utilidades ---------- */
+let tt;function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3800);}
+
+init3D();selectRx(0);
+if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude/.test(location.host)){try{navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}}
+})();
+</script>
+
+</body>
+</html>
