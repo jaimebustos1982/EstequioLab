@@ -269,6 +269,7 @@ th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut
     <p>Universidad Surcolombiana · Facultad de Ingeniería · Programa de Ingeniería Agroindustrial</p>
     <p>EstequioLab · Docente D. Sc. Jaime Daniel Bustos Vanegas</p>
     <p>© 2026 Universidad Surcolombiana. Todos los derechos reservados.</p>
+    <p>Versión <b id="appver">1.4</b> · 9 nov 2026 · contenido: Ácido láctico desde lactosuero, pistas progresivas</p>
   </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -1115,7 +1116,11 @@ function plantUpdate(){
 let tt;function toast(m,ms=3800){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),ms);}
 
 init3D();selectRx(0);
-if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude/.test(location.host)){try{navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}}
+if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude/.test(location.host)){try{
+  let reloaded=false;const hadCtrl=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadCtrl&&!reloaded){reloaded=true;location.reload();}});
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update();});}).catch(()=>{});
+}catch(e){}}
 })();
 </script>
 
