@@ -62,6 +62,7 @@ footer.foot{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:3
 footer.foot p{margin:0;font-size:.78rem;color:var(--muted)}
 footer.foot a{color:inherit}
 .hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+@media (max-width:480px){.score .sl{display:none}}
 .score{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:700}
 .score b{font-family:var(--f-display);font-size:1.15rem;color:var(--accent)}
 
@@ -115,6 +116,22 @@ footer.foot a{color:inherit}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
 .hint-drag{position:absolute;top:54px;right:14px;font-size:.72rem;opacity:.55;pointer-events:none;z-index:2}
 
+/* Modal tabla */
+.tbtn{white-space:nowrap}
+.modal[hidden],.legend[hidden]{display:none}
+.lbl.pl{white-space:normal;max-width:min(300px,calc(100% - 16px));line-height:1.35}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(4,14,18,.55);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.mcard{background:var(--surface);color:var(--ink);border-radius:20px;border:1px solid var(--line);width:min(980px,100%);max-height:calc(100vh - 48px);overflow:auto;padding:18px 20px;display:grid;gap:12px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.mhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.mhead h2{margin:0;font-family:var(--f-display);font-size:1.35rem}
+.mhead p{margin:2px 0 0;color:var(--muted);font-size:.88rem}
+.ib2{width:38px;height:38px;flex:none;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-size:1.4rem;line-height:1}
+.msearch{width:100%;border:1.5px solid var(--line);background:var(--surface-2);border-radius:10px;padding:9px 12px;font:inherit;color:var(--ink)}
+.mtbl table{font-size:.88rem}.mtbl td.fm{font-family:var(--f-mono);white-space:nowrap}.mtbl td.uso{color:var(--muted);text-align:left;min-width:180px}
+.mtbl th:nth-child(5),.mtbl td:nth-child(5){text-align:left}.mtbl td:nth-child(3),.mtbl th:nth-child(3){text-align:center}
+.mtbl tr.hl td{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.msrc{margin:0;padding-left:18px;font-size:.76rem;color:var(--muted);display:grid;gap:2px;list-style:none}
+.mnote{margin:0}
 /* Result bar */
 .rbar{--rc:var(--line);display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;border-radius:var(--r);padding:12px 16px;border:1.5px solid var(--rc);background:var(--surface);min-height:58px}
 .rbar.exo{--rc:var(--exo);background:color-mix(in srgb,var(--exo) 9%,var(--surface))}
@@ -196,7 +213,7 @@ th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut
 .mb .track{display:flex;height:22px;border-radius:8px;overflow:hidden;background:var(--surface-2)}
 .mb .track i{display:block;height:100%}
 .mlegend{display:flex;flex-wrap:wrap;gap:10px;font-size:.76rem;color:var(--muted)}
-.mlegend span{display:inline-flex;gap:5px;align-items:center}
+.mlegend>span{display:inline-flex;gap:5px;align-items:center}
 .mlegend i{width:10px;height:10px;border-radius:3px;display:inline-block}
 .thermo{display:grid;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:center}
 .src{font-size:.74rem;color:var(--muted);margin:0}
@@ -216,7 +233,8 @@ th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut
       <div><div class="inst-name">UNIVERSIDAD SURCOLOMBIANA</div><div class="inst-sub">Facultad de Ingeniería · Programa de Ingeniería Agroindustrial</div></div>
     </div>
     <div class="hdr-right">
-      <div class="score" title="Reacciones balanceadas sin ver la solución"><span>Retos resueltos</span><b id="score" class="num">0</b><span class="num" style="color:var(--muted);font-weight:400">/ 11</span></div>
+      <button class="btn tbtn" id="btnTabla" type="button" title="Entalpías de formación de compuestos agroindustriales">Tabla de ΔH°<sub>f</sub></button>
+      <div class="score" title="Reacciones balanceadas sin ver la solución"><span>Retos<span class="sl"> resueltos</span></span><b id="score" class="num">0</b><span class="num" style="color:var(--muted);font-weight:400">/ 11</span></div>
       <button class="sndbtn" id="snd" aria-pressed="true" aria-label="Sonido activado" title="Activar o silenciar sonidos">
         <svg class="on" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>
         <svg class="off" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
@@ -269,10 +287,19 @@ th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut
     <p>Universidad Surcolombiana · Facultad de Ingeniería · Programa de Ingeniería Agroindustrial</p>
     <p>EstequioLab · Docente D. Sc. Jaime Daniel Bustos Vanegas</p>
     <p>© 2026 Universidad Surcolombiana. Todos los derechos reservados.</p>
-    <p>Versión <b id="appver">1.5</b> · 9 nov 2026 · contenido: Ácido láctico desde lactosuero, pistas progresivas</p>
+    <p>Versión <b id="appver">1.7</b> · 10 nov 2026 · un equipo real por proceso en la escala de planta</p>
   </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="mcard">
+    <div class="mhead"><div><h2 id="mTitle">Entalpías de formación estándar</h2><p>ΔH°<sub>f</sub> a 298,15 K y 1 bar, en kJ/mol. Los compuestos de la reacción abierta aparecen resaltados.</p></div><button class="ib2" id="mClose" aria-label="Cerrar tabla">×</button></div>
+    <input id="mSearch" class="msearch" type="search" placeholder="Buscar compuesto, fórmula o uso…" aria-label="Buscar compuesto">
+    <div class="tbl mtbl"><table><thead><tr><th>Compuesto</th><th>Fórmula</th><th>Estado</th><th>ΔH°<sub>f</sub></th><th>Uso agroindustrial</th><th>Fuente</th></tr></thead><tbody id="mBody"></tbody></table></div>
+    <p class="note mnote">ΔH°<sub>r</sub> = Σ ν·ΔH°<sub>f</sub>(productos) − Σ ν·ΔH°<sub>f</sub>(reactivos). Los elementos en su estado estándar (O<sub>2</sub>, N<sub>2</sub>) valen 0.</p>
+    <ol class="msrc" id="mSrc"></ol>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -306,7 +333,7 @@ const DEF={
  h2o:{n:'Agua',f:'H2O',h:-285.8,st:'l',role:'Medio de reacción, reactivo en hidrólisis y producto de oxidaciones.'},
  o2:{n:'Oxígeno',f:'O2',h:0,st:'g',role:'Aceptor de electrones en respiración y combustión. Elemento en su estado estándar: ΔH°f = 0.'},
  ch4:{n:'Metano',f:'CH4',h:-74.6,st:'g',role:'Componente energético del biogás.'},
- ace:{n:'Ácido acético',f:'CH3COOH',h:-484.3,st:'l',role:'Ácido del vinagre; se forma en la fermentación del cacao.'},
+ ace:{n:'Ácido acético',f:'CH3COOH',h:-483.5,st:'l',role:'Ácido del vinagre; se forma en la fermentación del cacao.'},
  lac:{n:'Ácido láctico',f:'C3H6O3',h:-694.1,st:'s',role:'Acidulante y conservante de alimentos; materia prima del bioplástico PLA.'},
  nh3:{n:'Amoníaco',f:'NH3',h:-45.9,st:'g',role:'Producto de la hidrólisis de la urea; puede perderse por volatilización.'},
  ure:{n:'Urea',f:'CO(NH2)2',h:-333.1,st:'s',role:'Fertilizante nitrogenado más usado.'},
@@ -537,6 +564,311 @@ function updateFX(dt,t){
   if(FX.flash){const k=(now-FX.flash.t0)/FX.flash.dur;FX.light.intensity=k>=1?0:FX.flash.peak*Math.pow(1-k,2);if(k>=1)FX.flash=null;}
 }
 
+/* ---------- Equipos a escala de planta (render 3D esquemático, uno por proceso) ---------- */
+const MODEL_OF={alc:'cct',resp:'silo',lacsu:'stirred',ace:'acet',inv:'pailas',met:'biodig',bio:'boiler',etc:'boiler',fot:'pbr',ure:'soil',cal:'kiln'};
+const EQUIPO={alc:'Fermentador cilindrocónico',resp:'Silo de grano con aireación',lacsu:'Fermentador agitado de lactosuero',ace:'Acetificador sumergido',inv:'Hornilla panelera (pailas)',
+  met:'Biodigestor tubular',bio:'Caldera pirotubular con quemador de biogás',etc:'Caldera pirotubular con quemador de bioetanol',fot:'Fotobiorreactor tubular',ure:'Suelo agrícola fertilizado',cal:'Horno vertical de cal'};
+const EQUIPO_NOTA={cct:'Sin agitador: el CO₂ que sube mezcla el mosto. Las bandas de la chaqueta enfrían por zonas y el cono recoge la levadura.',
+  silo:'El ventilador empuja aire bajo el piso perforado; el aire atraviesa el grano y sale por el techo llevándose calor y CO₂.',
+  stirred:'Tanque con agitador de turbinas y chaqueta para controlar la temperatura de la fermentación.',
+  acet:'La turbina del fondo aspira aire y lo dispersa en burbujas finas; el serpentín interno retira el calor y el rompedor de espuma trabaja arriba.',
+  pailas:'El jugo avanza de paila en paila sobre el ducto de humos; la sacarosa se invierte con el calor mientras el agua se evapora.',
+  biodig:'Bolsa de polietileno semienterrada: entra la mezcla de residuos y agua, sale el digestato y el biogás se acumula arriba.',
+  boiler:'El combustible y el aire arden en el hogar; los gases calientes recorren los tubos de humo y calientan el agua de la carcasa.',
+  pbr:'El cultivo circula por tubos transparentes expuestos al sol; en la columna se inyecta CO₂ y se libera el O₂ producido.',
+  soil:'La urea aplicada se disuelve con la humedad del suelo; la ureasa la hidroliza y el amoníaco puede escapar si no se incorpora.',
+  kiln:'La caliza baja por gravedad: se precalienta, se calcina en la zona de quemadores y se enfría antes de descargarse como cal viva.'};
+const LIQ={alc:0xB8742A,resp:0xC9A35A,lacsu:0xE3D49A,ace:0xC08A3A,inv:0xC9902E,met:0x5B4A2A,fot:0x3F9A4A};
+const PLANTS={};let curPlant=null;
+function pipe(g,a,b,r,mat){const A=new V3(...a),B=new V3(...b),d=B.clone().sub(A),L=d.length();const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,16),mat);
+  m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(UP,d.normalize());g.add(m);return m;}
+function pipePath(g,pts,r,mat){for(let i=1;i<pts.length;i++)pipe(g,pts[i-1],pts[i],r,mat);}
+function mats(){return {
+  steel:new THREE.MeshStandardMaterial({color:0xC9D3D9,metalness:.85,roughness:.28}),
+  dark:new THREE.MeshStandardMaterial({color:0x3A444B,metalness:.6,roughness:.45}),
+  shell:new THREE.MeshStandardMaterial({color:0xD5DEE3,metalness:.9,roughness:.25,transparent:true,opacity:.24,side:THREE.DoubleSide,depthWrite:false}),
+  concrete:new THREE.MeshStandardMaterial({color:0x8E8A82,roughness:.95}),
+  brick:new THREE.MeshStandardMaterial({color:0x9C4A2E,roughness:.9}),
+  pvc:new THREE.MeshStandardMaterial({color:0xE8E8E2,roughness:.6}),
+  glass:new THREE.MeshStandardMaterial({color:0xCFEFFF,metalness:.1,roughness:.05,transparent:true,opacity:.22,side:THREE.DoubleSide,depthWrite:false})};}
+function tempMat(op){return new THREE.MeshStandardMaterial({color:0x1E3A8A,emissive:0x1E3A8A,emissiveIntensity:.25,transparent:op<1,opacity:op,side:THREE.DoubleSide,depthWrite:op>=1,metalness:.3,roughness:.4});}
+function liquidMat(hex,op=.6){return new THREE.MeshStandardMaterial({color:hex,transparent:true,opacity:op,roughness:.2,metalness:.05,emissive:0x000000});}
+function flame(g,x,y,z,s){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:FX.tex,color:0xff7a1a,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));sp.position.set(x,y,z);sp.scale.setScalar(s);sp.userData.s=s;g.add(sp);return sp;}
+function floor(g,y,size=16){const gr=new THREE.GridHelper(size,size,0x2a4a52,0x14303a);gr.position.y=y;g.add(gr);}
+
+const BUILD={
+ stirred(m,M){const g=m.g,R0=2.4,H0=5;
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(R0,R0,H0,72,1,true),M.shell));
+  const head=new THREE.SphereGeometry(R0,56,18,0,Math.PI*2,0,Math.PI/2);
+  const t=new THREE.Mesh(head,M.shell);t.scale.y=.38;t.position.y=H0/2;g.add(t);const b=new THREE.Mesh(head,M.shell);b.scale.y=-.38;b.position.y=-H0/2;g.add(b);
+  m.liq=liquidMat(0xE3D49A);const l=new THREE.Mesh(new THREE.CylinderGeometry(R0-.08,R0-.08,3.9,64),m.liq);l.position.y=-.6;g.add(l);
+  const lb=new THREE.Mesh(head,m.liq);lb.scale.set(.97,-.36,.97);lb.position.y=-H0/2;g.add(lb);
+  const j=tempMat(.5);m.temp.push(j);const jk=new THREE.Mesh(new THREE.CylinderGeometry(R0+.16,R0+.16,3.4,72,1,true),j);jk.position.y=-.7;g.add(jk);
+  const ag=new THREE.Group();g.add(ag);{const sh=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,6.4,12),M.steel);sh.position.y=.95;ag.add(sh);}
+  [-1.7,.1].forEach(y=>{const d=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.05,24),M.steel);d.position.y=y;ag.add(d);
+    for(let k=0;k<6;k++){const bl=new THREE.Mesh(new THREE.BoxGeometry(.32,.34,.04),M.steel);const a=k*Math.PI/3;bl.position.set(Math.cos(a)*.62,y,Math.sin(a)*.62);bl.rotation.y=-a;ag.add(bl);}});
+  m.anim.push(dt=>{ag.rotation.y+=dt*2.4;});
+  const mo=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.95,24),M.dark);mo.position.y=4.55;g.add(mo);
+  for(let k=0;k<4;k++){const a=Math.PI/4+k*Math.PI/2;pipe(g,[Math.cos(a)*1.9,-2.7,Math.sin(a)*1.9],[Math.cos(a)*2.05,-4.6,Math.sin(a)*2.05],.1,M.steel);}
+  floor(g,-4.62);
+  m.paths={feed:[[-5.6,2.1,0],[-2.3,2.1,0],[-1.6,1.6,0]],gasIn:[[-5.6,-3.2,0],[-2.9,-3.2,0],[-2.9,-2.0,0],[-1.2,-2.0,0]],gasOut:[[1.3,3.0,0],[1.3,5.4,0],[4.8,5.4,0]],out:[[0,-3.45,0],[0,-3.9,0],[5.6,-3.9,0]]};
+  m.bubble={r:1.6,y0:-2.0,y1:1.3,on:'gas'};
+  m.L={title:[0,6.1],feed:[-5,2.6],gasIn:[-5,-2.7],gasOut:[4.6,5.9],out:[4.6,-3.4],heat:[4.4,-1.2]};
+  m.yr=[-4.6,5.6];m.xr=[-6,6];m.mpu=.5;},
+
+ cct(m,M){const g=m.g,R0=1.8;
+  g.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(R0,R0,6,64,1,true),M.shell),{}));
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(R0,2.4,64,1,true),M.shell);cone.rotation.x=Math.PI;cone.position.y=-4.2;g.add(cone);
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(R0,48,14,0,Math.PI*2,0,Math.PI/2),M.shell);dome.scale.y=.3;dome.position.y=3;g.add(dome);
+  m.liq=liquidMat(0xB8742A);const l=new THREE.Mesh(new THREE.CylinderGeometry(R0-.07,R0-.07,5.2,48),m.liq);l.position.y=-.4;g.add(l);
+  const lc=new THREE.Mesh(new THREE.ConeGeometry(R0-.07,2.3,48),m.liq);lc.rotation.x=Math.PI;lc.position.y=-4.15;g.add(lc);
+  const j=tempMat(.55);m.temp.push(j);[1.6,-.4,-2.2].forEach(y=>{const b=new THREE.Mesh(new THREE.CylinderGeometry(R0+.12,R0+.12,1.1,64,1,true),j);b.position.y=y;g.add(b);});
+  for(let k=0;k<4;k++){const a=Math.PI/4+k*Math.PI/2;pipe(g,[Math.cos(a)*1.7,-2.8,Math.sin(a)*1.7],[Math.cos(a)*2.2,-6.2,Math.sin(a)*2.2],.1,M.steel);}
+  floor(g,-6.2);
+  pipePath(g,[[-5.2,2.4,0],[-1.9,2.4,0]],.12,M.steel);pipePath(g,[[0,3.5,0],[0,4.6,0],[3.6,4.6,0],[3.6,3.4,0]],.11,M.steel);pipePath(g,[[0,-5.4,0],[0,-5.8,0],[4.8,-5.8,0]],.13,M.steel);
+  m.paths={feed:[[-5.2,2.4,0],[-1.9,2.4,0],[-1.2,1.9,0]],gasOut:[[0,3.5,0],[0,4.6,0],[3.6,4.6,0],[3.6,3.4,0]],out:[[0,-5.4,0],[0,-5.8,0],[4.8,-5.8,0]]};
+  m.bubble={r:1.3,y0:-4.6,y1:2.1,on:'gasProd'};
+  m.L={title:[0,5.6],feed:[-4.6,3.1],gasOut:[4.0,5.2],out:[4.4,-5.3],heat:[4.1,-.4]};
+  m.yr=[-6.2,5.2];m.xr=[-5.6,5.6];m.mpu=.5;},
+
+ acet(m,M){const g=m.g,R0=2.2;
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(R0,R0,5.4,64,1,true),M.shell));
+  const top=new THREE.Mesh(new THREE.CircleGeometry(R0,64),M.shell);top.rotation.x=-Math.PI/2;top.position.y=2.7;g.add(top);
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,.5,48),M.concrete);base.position.y=-3.0;g.add(base);
+  m.liq=liquidMat(0xC08A3A,.5);const l=new THREE.Mesh(new THREE.CylinderGeometry(R0-.06,R0-.06,4.2,48),m.liq);l.position.y=-.6;g.add(l);
+  const c=tempMat(1);m.temp.push(c);const pts=[];for(let i=0;i<=220;i++){const a=i/220*Math.PI*2*7;pts.push(new V3(Math.cos(a)*1.75,-2.2+i/220*3.5,Math.sin(a)*1.75));}
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),440,.06,8,false),c));
+  const rot=new THREE.Group();rot.position.y=-2.35;g.add(rot);rot.add(new THREE.Mesh(new THREE.CylinderGeometry(.75,.75,.12,32),M.steel));
+  for(let k=0;k<8;k++){const bl=new THREE.Mesh(new THREE.BoxGeometry(.5,.28,.05),M.steel);const a=k*Math.PI/4;bl.position.set(Math.cos(a)*.75,.16,Math.sin(a)*.75);bl.rotation.y=-a;rot.add(bl);}
+  const mo=new THREE.Mesh(new THREE.BoxGeometry(.9,.6,.9),M.dark);mo.position.y=-3.55;g.add(mo);
+  const fb=new THREE.Group();fb.position.y=2.15;g.add(fb);const fc=new THREE.Mesh(new THREE.ConeGeometry(.9,.4,24,1,true),M.steel);fc.rotation.x=Math.PI;fb.add(fc);
+  const mt=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,.8,20),M.dark);mt.position.y=3.15;g.add(mt);
+  m.anim.push(dt=>{rot.rotation.y+=dt*6;fb.rotation.y-=dt*4;});
+  floor(g,-3.82);
+  pipePath(g,[[-5.4,1.9,0],[-2.2,1.9,0]],.12,M.steel);pipePath(g,[[-5.4,-3.55,0],[-.45,-3.55,0]],.14,M.steel);pipePath(g,[[1.2,2.7,0],[1.2,4.4,0],[4.6,4.4,0]],.13,M.steel);pipePath(g,[[2.2,-2.3,0],[5.4,-2.3,0]],.13,M.steel);
+  m.paths={feed:[[-5.4,1.9,0],[-2.2,1.9,0],[-1.5,1.5,0]],gasIn:[[-5.4,-3.55,0],[-.45,-3.55,0],[0,-2.4,0]],gasOut:[[1.2,2.7,0],[1.2,4.4,0],[4.6,4.4,0]],out:[[1.6,-2.3,0],[5.4,-2.3,0]]};
+  m.bubble={r:2.0,y0:-2.2,y1:1.4,on:'gasIn',fill:true};
+  m.L={title:[0,5.1],feed:[-4.6,2.5],gasIn:[-4.6,-3.0],gasOut:[4.0,5.0],out:[4.6,-1.7],heat:[4.2,.5]};
+  m.yr=[-3.85,4.9];m.xr=[-5.8,5.8];m.mpu=.5;},
+
+ silo(m,M){const g=m.g,R0=2.8;
+  const sh=new THREE.MeshStandardMaterial({color:0xD0D6D9,metalness:.9,roughness:.3,transparent:true,opacity:.3,side:THREE.DoubleSide,depthWrite:false});
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(R0,R0,6,72,1,true),sh));
+  for(let i=0;i<=24;i++){const t=new THREE.Mesh(new THREE.TorusGeometry(R0+.01,.03,6,72),M.steel);t.rotation.x=Math.PI/2;t.position.y=-2+i*.25;g.add(t);}
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(R0+.15,1.5,72,1,true),sh);roof.position.y=4.75;g.add(roof);
+  const v=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,.5,16),M.steel);v.position.y=5.7;g.add(v);
+  const gm=tempMat(1);gm.color.setHex(0xC9A35A);gm.transparent=false;m.temp.push(gm);m.tempEmissiveOnly=true;
+  const gr=new THREE.Mesh(new THREE.CylinderGeometry(R0-.05,R0-.05,4.6,64),gm);gr.position.y=.3;g.add(gr);
+  const heap=new THREE.Mesh(new THREE.ConeGeometry(R0-.05,1.1,64),gm);heap.position.y=3.15;g.add(heap);
+  const slab=new THREE.Mesh(new THREE.CylinderGeometry(3.3,3.3,.4,64),M.concrete);slab.position.y=-2.25;g.add(slab);
+  const fan=new THREE.Group();fan.position.set(-4.6,-1.4,0);g.add(fan);const hs=new THREE.Mesh(new THREE.CylinderGeometry(.75,.75,.6,32,1,true),M.dark);hs.rotation.z=Math.PI/2;fan.add(hs);
+  const bl=new THREE.Group();fan.add(bl);for(let k=0;k<5;k++){const b=new THREE.Mesh(new THREE.BoxGeometry(.06,.62,.18),M.steel);b.rotation.x=k*Math.PI*2/5;b.position.y=0;const p=new THREE.Group();p.rotation.x=k*Math.PI*2/5;b.position.y=.32;p.add(b);bl.add(p);}
+  m.anim.push(dt=>{bl.rotation.x+=dt*12;});
+  pipePath(g,[[-3.9,-1.4,0],[-2.9,-1.4,0]],.32,M.dark);
+  pipePath(g,[[-6.4,-2.0,0],[-5.0,6.6,0],[-.5,6.6,0],[-.3,6.0,0]],.14,M.steel);
+  pipePath(g,[[0,-2.5,0],[5.6,-2.5,0]],.16,M.steel);
+  floor(g,-2.47);
+  m.paths={feed:[[-6.4,-2.0,0],[-5.0,6.6,0],[-.5,6.6,0],[-.3,5.8,0],[0,3.6,0]],gasIn:[[-5.4,-1.4,0],[-2.9,-1.4,0],[-1.5,-1.9,0]],gasOut:[[0,5.7,0],[0,7.4,0]],out:[[0,-2.0,0],[0,-2.5,0],[5.6,-2.5,0]]};
+  m.bubble={r:2.6,y0:-1.9,y1:3.4,on:'gasIn',fill:true,col:0xE6F4FF};
+  m.L={title:[0,8.0],feed:[-4.9,7.2],gasIn:[-5.2,-.4],gasOut:[1.8,7.4],out:[4.6,-1.9],heat:[4.4,1.6]};
+  m.yr=[-2.5,7.8];m.xr=[-6.6,6];m.mpu=.5;},
+
+ pailas(m,M){const g=m.g;
+  const f=new THREE.Mesh(new THREE.BoxGeometry(10.4,1.8,2.8),M.brick);f.position.y=-2.4;g.add(f);
+  const ch=new THREE.Mesh(new THREE.CylinderGeometry(.55,.75,8.2,20),M.brick);ch.position.set(5.9,1.2,0);g.add(ch);
+  const box=new THREE.Mesh(new THREE.BoxGeometry(1.4,1.2,1.6),new THREE.MeshStandardMaterial({color:0x1a0d08,roughness:1}));box.position.set(-5.25,-2.6,0);g.add(box);
+  m.flames=[];for(let k=0;k<5;k++)m.flames.push(flame(g,-5.3+Math.random()*.6,-2.8+Math.random()*.5,.85,.9+Math.random()*.5));
+  const copper=new THREE.MeshStandardMaterial({color:0xB87333,metalness:.85,roughness:.3,side:THREE.DoubleSide});
+  m.liqs=[];[-3.6,-1.2,1.2,3.6].forEach((x,i)=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(1.05,.75,.75,40,1,true),copper);p.position.set(x,-1.15,0);g.add(p);
+    const bo=new THREE.Mesh(new THREE.CircleGeometry(.75,40),copper);bo.rotation.x=-Math.PI/2;bo.position.set(x,-1.52,0);g.add(bo);
+    const lm=tempMat(1);lm.color.setHex([0xD9B45A,0xC9902E,0xA8681E,0x7A4512][i]);m.temp.push(lm);m.tempEmissiveOnly=true;
+    const lq=new THREE.Mesh(new THREE.CircleGeometry(.98,40),lm);lq.rotation.x=-Math.PI/2;lq.position.set(x,-.86,0);g.add(lq);});
+  floor(g,-3.32);
+  pipePath(g,[[-6.6,.3,0],[-4.6,.3,0],[-4.2,-.6,0]],.11,M.pvc);pipePath(g,[[4.6,-.9,0],[6.6,-1.7,0]],.12,M.steel);
+  m.paths={feed:[[-6.6,.3,0],[-4.6,.3,0],[-4.2,-.6,0]],out:[[4.6,-.9,0],[6.6,-1.7,0]],smoke:[[5.9,5.3,0],[6.4,8.2,0]]};
+  m.ambient=[['smoke',0x8a8f93]];
+  m.bubble={pans:[-3.6,-1.2,1.2,3.6],y0:-.86,on:'always',col:0xffffff};
+  m.L={title:[0,4.6],feed:[-5.4,1.0],out:[4.7,-.3],heat:[0,1.6]};
+  m.yr=[-3.3,5.4];m.xr=[-6.8,6.8];m.mpu=.5;},
+
+ biodig(m,M){const g=m.g;
+  const soil=new THREE.MeshStandardMaterial({color:0x5A3E26,roughness:1});
+  const gnd=new THREE.Mesh(new THREE.BoxGeometry(14,1.6,5),soil);gnd.position.y=-2.4;g.add(gnd);
+  const grass=new THREE.Mesh(new THREE.BoxGeometry(14,.06,5),new THREE.MeshStandardMaterial({color:0x4F7A3A,roughness:1}));grass.position.y=-1.57;g.add(grass);
+  const bagM=new THREE.MeshStandardMaterial({color:0x2B2F33,metalness:.2,roughness:.35,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false});
+  const bag=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,9,48,1,false),bagM);bag.rotation.z=Math.PI/2;bag.position.y=-1.6;bag.scale.set(1,1,.85);g.add(bag);
+  m.liq=tempMat(.75);m.liq.color.setHex(0x5B4A2A);m.temp.push(m.liq);m.tempEmissiveOnly=true;
+  const lq=new THREE.Mesh(new THREE.CylinderGeometry(1.35,1.35,8.8,40,1,false,Math.PI/2,Math.PI),m.liq);lq.rotation.z=Math.PI/2;lq.position.y=-1.75;g.add(lq);
+  m.anim.push((dt,t)=>{bag.scale.y=1+.03*Math.sin(t*1.2);});
+  const tank=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,1.2,24),M.concrete);tank.position.set(-6.4,-1.0,0);g.add(tank);
+  const tank2=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,1.2,24),M.concrete);tank2.position.set(6.4,-1.2,0);g.add(tank2);
+  pipePath(g,[[-6.0,-.9,0],[-4.6,-2.4,0]],.13,M.pvc);pipePath(g,[[4.6,-2.2,0],[6.0,-1.2,0]],.13,M.pvc);
+  pipePath(g,[[0,-.1,0],[0,1.6,0],[4.6,1.6,0],[4.6,.6,0]],.08,M.pvc);
+  const res=new THREE.Mesh(new THREE.SphereGeometry(.7,24,16),new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:.5}));res.position.set(4.6,.2,0);g.add(res);
+  m.paths={feed:[[-6.6,-.4,0],[-6.0,-.9,0],[-4.6,-2.4,0]],gasOut:[[0,-.1,0],[0,1.6,0],[4.6,1.6,0],[4.6,.9,0]],out:[[4.6,-2.2,0],[6.0,-1.2,0],[6.6,-.6,0]]};
+  m.bubble={box:[-4.2,4.2],y0:-2.9,y1:-.4,r:.9,on:'gasProd'};
+  m.L={title:[0,3.6],feed:[-5.5,.4],gasOut:[2.8,2.5],out:[5.4,.0],heat:[-1.8,1.2]};
+  m.yr=[-3.2,3.4];m.xr=[-7,7];m.mpu=1;},
+
+ boiler(m,M){const g=m.g;
+  const shell=new THREE.Mesh(new THREE.CylinderGeometry(1.8,1.8,6.6,56,1,true),M.shell);shell.rotation.z=Math.PI/2;g.add(shell);
+  [-3.3,3.3].forEach(x=>{const e=new THREE.Mesh(new THREE.CircleGeometry(1.8,48),M.shell);e.rotation.y=Math.PI/2;e.position.x=x;g.add(e);});
+  const fire=tempMat(1);m.temp.push(fire);
+  const ft=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,6.4,32),fire);ft.rotation.z=Math.PI/2;ft.position.y=-.5;g.add(ft);
+  for(let k=0;k<8;k++){const a=k/8*Math.PI*2;const tb=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,6.4,10),M.steel);tb.rotation.z=Math.PI/2;tb.position.set(0,.35+Math.sin(a)*.9*.6,Math.cos(a)*1.0);g.add(tb);}
+  const water=liquidMat(0x5FA8E0,.25);const w=new THREE.Mesh(new THREE.CylinderGeometry(1.75,1.75,6.5,48),water);w.rotation.z=Math.PI/2;w.scale.set(1,1,1);g.add(w);
+  const burner=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.4,1.4),new THREE.MeshStandardMaterial({color:0xA61C22,metalness:.4,roughness:.5}));burner.position.set(-4.0,-.5,0);g.add(burner);
+  m.flames=[];for(let k=0;k<7;k++)m.flames.push(flame(g,-3.0+k*.55,-.5,0,.9-k*.07));
+  [-2.4,2.4].forEach(x=>{const s=new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,2.4),M.dark);s.position.set(x,-2.2,0);g.add(s);});
+  pipePath(g,[[3.3,.9,0],[3.9,.9,0],[3.9,6.6,0]],.32,M.dark);
+  pipePath(g,[[0,1.8,0],[0,2.8,0],[2.2,2.8,0]],.1,new THREE.MeshStandardMaterial({color:0xD7263D,roughness:.4}));
+  pipePath(g,[[-1.5,-1.75,0],[-1.5,-2.5,0],[-5.5,-2.5,0]],.08,new THREE.MeshStandardMaterial({color:0x2448b8,roughness:.4}));
+  pipePath(g,[[-6.4,-.2,0],[-4.6,-.2,0]],.09,M.steel);pipePath(g,[[-6.4,-1.0,0],[-4.6,-1.0,0]],.13,M.dark);
+  floor(g,-2.75);
+  m.paths={feed:[[-6.4,-.2,0],[-4.6,-.2,0],[-3.4,-.4,0]],gasIn:[[-6.4,-1.0,0],[-4.6,-1.0,0],[-3.4,-.6,0]],gasOut:[[3.3,.9,0],[3.9,.9,0],[3.9,6.6,0],[3.9,7.6,0]]};
+  m.allGasOut=true;
+  m.L={title:[0,4.6],feed:[-5.3,.8],gasIn:[-5.3,-1.6],gasOut:[5.3,6.6],heat:[1.2,3.4]};
+  m.yr=[-2.8,7.2];m.xr=[-6.6,6.2];m.mpu=.5;},
+
+ pbr(m,M){const g=m.g;
+  const frame=new THREE.MeshStandardMaterial({color:0x6B7780,metalness:.6,roughness:.5});
+  m.liq=tempMat(.85);m.liq.color.setHex(0x3F9A4A);m.temp.push(m.liq);m.tempEmissiveOnly=true;
+  const rows=6,path=[];for(let i=0;i<rows;i++){const y=-2.2+i*.8;const dir=i%2?-1:1;
+    const tb=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,9,20,1,true),M.glass);tb.rotation.z=Math.PI/2;tb.position.set(.5,y,0);g.add(tb);
+    const lq=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,9,16),m.liq);lq.rotation.z=Math.PI/2;lq.position.set(.5,y,0);g.add(lq);
+    if(dir>0)path.push([-4,y,0],[5,y,0]);else path.push([5,y,0],[-4,y,0]);}
+  for(let i=0;i<rows-1;i++){const y=-2.2+i*.8+.4,x=i%2?-4:5;const u=new THREE.Mesh(new THREE.TorusGeometry(.4,.2,12,24,Math.PI),M.glass);u.position.set(x,y,0);u.rotation.z=i%2?Math.PI/2:-Math.PI/2;g.add(u);}
+  [-3.6,.5,4.6].forEach(x=>pipe(g,[x,-2.9,-.4],[x,2.2,-.4],.07,frame));
+  const col=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,5,24,1,true),M.glass);col.position.set(-5.4,0,0);g.add(col);
+  const cl=new THREE.Mesh(new THREE.CylinderGeometry(.52,.52,4.2,20),m.liq);cl.position.set(-5.4,-.3,0);g.add(cl);
+  pipePath(g,[[-5.4,-2.5,0],[-5.4,-2.2,0],[-4,-2.2,0]],.12,M.pvc);
+  const sun=new THREE.Sprite(new THREE.SpriteMaterial({map:FX.tex,color:0xFFE38A,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));sun.position.set(4.6,5.0,-1);sun.scale.setScalar(3);g.add(sun);
+  m.anim.push((dt,t)=>{sun.scale.setScalar(3+.2*Math.sin(t*1.5));});
+  pipePath(g,[[-7.2,-2.5,0],[-5.9,-2.5,0]],.09,M.steel);pipePath(g,[[-5.4,2.5,0],[-5.4,3.6,0]],.09,M.steel);pipePath(g,[[-7.2,1.8,0],[-5.9,1.8,0]],.09,M.pvc);pipePath(g,[[5,-2.2,0],[5,-3.1,0],[6.6,-3.1,0]],.11,M.pvc);
+  floor(g,-3.2);
+  m.paths={feed:[[-7.2,1.8,0],[-5.9,1.8,0],[-5.4,1.5,0]],gasIn:[[-7.2,-2.5,0],[-5.9,-2.5,0],[-5.4,-2.3,0]],gasOut:[[-5.4,2.5,0],[-5.4,4.4,0]],out:[[5,-2.2,0],[5,-3.1,0],[6.6,-3.1,0]],loop:path};
+  m.ambient=[['loop',0x9BE08F]];
+  m.bubble={col_x:-5.4,r:.45,y0:-2.3,y1:1.8,on:'gasIn'};
+  m.L={title:[.5,3.4],feed:[-6.6,2.6],gasIn:[-6.6,-1.6],gasOut:[-4.0,4.6],out:[5.4,-2.4],heat:[3.0,2.6]};
+  m.yr=[-3.2,5.6];m.xr=[-7.6,6.8];m.mpu=.5;},
+
+ soil(m,M){const g=m.g;
+  const top=tempMat(1);top.color.setHex(0x4A3220);m.temp.push(top);m.tempEmissiveOnly=true;
+  const s1=new THREE.Mesh(new THREE.BoxGeometry(11,1.2,4),top);s1.position.y=-1.4;g.add(s1);
+  const s2=new THREE.Mesh(new THREE.BoxGeometry(11,1.6,4),new THREE.MeshStandardMaterial({color:0x7A5A3A,roughness:1}));s2.position.y=-2.8;g.add(s2);
+  const leaf=new THREE.MeshStandardMaterial({color:0x5E9B3E,roughness:.8,side:THREE.DoubleSide});
+  for(let i=0;i<7;i++)for(let j=0;j<2;j++){const x=-4.5+i*1.5,z=-1+j*2;pipe(g,[x,-.8,z],[x,1.9,z],.05,leaf);
+    for(let k=0;k<3;k++){const lf=new THREE.Mesh(new THREE.PlaneGeometry(1.1,.18),leaf);lf.position.set(x+.45*(k%2?1:-1),-.2+k*.7,z);lf.rotation.z=(k%2?-1:1)*.5;g.add(lf);}}
+  const gran=new THREE.MeshStandardMaterial({color:0xF4F4EE,roughness:.6});
+  for(let i=0;i<70;i++){const s=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),gran);s.position.set(-5+Math.random()*10,-.78+(i<45?0:-.3-Math.random()*.7),-1.8+Math.random()*3.6);g.add(s);}
+  m.paths={feed:[[-4.2,4.6,0],[-2,-.7,0]],gasOut:[[1.0,-.75,0],[2.6,4.4,0]]};
+  m.L={title:[0,5.2],feed:[-4.8,4.0],gasOut:[3.6,4.2],heat:[-3.6,-2.6]};
+  m.yr=[-3.6,5.0];m.xr=[-6,6];m.mpu=.5;},
+
+ kiln(m,M){const g=m.g;
+  const sh=new THREE.MeshStandardMaterial({color:0x8C8C86,metalness:.5,roughness:.6,transparent:true,opacity:.28,side:THREE.DoubleSide,depthWrite:false});
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(1.7,1.9,10,48,1,true),sh));
+  const hop=new THREE.Mesh(new THREE.CylinderGeometry(1.4,.6,1.2,32,1,true),M.dark);hop.position.y=5.6;g.add(hop);
+  const zone=tempMat(.7);m.temp.push(zone);const z=new THREE.Mesh(new THREE.CylinderGeometry(1.55,1.65,2.6,48),zone);z.position.y=-.2;g.add(z);
+  const st=new THREE.MeshStandardMaterial({color:0x9E9A90,roughness:.9}),lime=new THREE.MeshStandardMaterial({color:0xF2F0EA,roughness:.9});
+  for(let i=0;i<120;i++){const y=-4.6+Math.random()*9.6;if(y>-1.5&&y<1.1)continue;const a=Math.random()*6.283,r=Math.random()*1.4;
+    const s=new THREE.Mesh(new THREE.DodecahedronGeometry(.22+Math.random()*.12),y<-1.5?lime:st);s.position.set(Math.cos(a)*r,y,Math.sin(a)*r);s.rotation.set(Math.random()*3,Math.random()*3,0);g.add(s);}
+  m.flames=[];[[-2.2,0],[2.2,0],[0,2.2]].forEach(([x,zz])=>{pipe(g,[x*1.6,-.2,zz*1.6],[x*.9,-.2,zz*.9],.12,M.dark);m.flames.push(flame(g,x*.6,-.2,zz*.6,1.4));});
+  pipePath(g,[[-6.2,-4.9,0],[-1.6,6.5,0]],.08,M.dark);pipePath(g,[[1.0,5.0,0],[1.0,7.2,0],[4.2,7.2,0],[4.2,8.4,0]],.32,M.dark);
+  pipePath(g,[[0,-5.1,0],[0,-5.6,0],[4.6,-6.0,0]],.2,M.steel);
+  floor(g,-6.1);
+  m.paths={feed:[[-6.2,-4.9,0],[-1.6,6.5,0],[0,5.8,0]],gasOut:[[1.0,5.0,0],[1.0,7.2,0],[4.2,7.2,0],[4.2,8.6,0]],out:[[0,-5.1,0],[0,-5.6,0],[4.6,-6.0,0]]};
+  m.L={title:[0,9.3],feed:[-4.8,2.0],gasOut:[5.6,8.0],out:[4.4,-5.3],heat:[3.4,-.2]};
+  m.yr=[-6.1,9.0];m.xr=[-6.4,6.4];m.mpu=1;}
+};
+
+function getPlant(type){
+  if(PLANTS[type])return PLANTS[type];
+  const g=new THREE.Group();g.visible=false;world.add(g);
+  const m={type,g,temp:[],anim:[],paths:{},L:{},ambient:[]};
+  BUILD[type](m,mats());
+  g.position.y=-(m.yr[0]+m.yr[1])/2;
+  const NP=520,pos=new Float32Array(NP*3),col=new Float32Array(NP*3),geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:.3,map:FX.tex,vertexColors:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));pts.frustumCulled=false;g.add(pts);
+  Object.assign(m,{pos,col,geo,P:Array.from({length:NP},()=>({k:-1,t:Math.random(),x:0,y:0,z:0,s:.5+Math.random()})),streams:[],bubbleOn:false});
+  PLANTS[type]=m;return m;
+}
+function along(path,t){let L=0;const seg=[];for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],l=Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]);seg.push(l);L+=l;}
+  let d=t*L;for(let i=0;i<seg.length;i++){if(d<=seg[i]||i===seg.length-1){const a=path[i],b=path[i+1],u=Math.min(1,d/seg[i]);return [a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u];}d-=seg[i];}return path[0];}
+function plantFlows(c){
+  const {R,P}=species();
+  return {gasIn:R.some(s=>s.st==='g'),solIn:R.some(s=>s.st!=='g'),gasProd:P.some(s=>s.st==='g'),
+    gasOut:P.some(s=>s.st==='g')||c.exc.some(x=>x.sp.st==='g'&&x.kg>1e-6),liqOut:P.some(s=>s.st!=='g')||c.exc.some(x=>x.sp.st!=='g'&&x.kg>1e-6)};
+}
+function configurePlant(c){
+  const r=rx(),m=getPlant(MODEL_OF[r.id]||'stirred');
+  Object.values(PLANTS).forEach(p=>p.g.visible=(p===m));curPlant=m;
+  const f=plantFlows(c);
+  if(m.liq&&!m.tempEmissiveOnly&&LIQ[r.id])m.liq.color.setHex(LIQ[r.id]);
+  const T=25+c.dT;m.T=T;m.exo=c.Q<0;
+  const k=Math.max(0,Math.min(1,T/100)),jc=new THREE.Color(0x1E3A8A).lerp(new THREE.Color(0xD7263D),k);
+  m.temp.forEach(mt=>{if(m.tempEmissiveOnly){mt.emissive.copy(jc);mt.emissiveIntensity=.35;}else{mt.color.copy(jc);mt.emissive.copy(jc);}});
+  const s=[];
+  if(f.solIn&&m.paths.feed)s.push(['feed',0xffc46b]);
+  if(f.gasIn&&m.paths.gasIn)s.push(['gasIn',0x9fd8ff]);
+  if((f.gasOut||m.allGasOut)&&m.paths.gasOut)s.push(['gasOut',0xb8c4c9]);
+  if(f.liqOut&&!m.allGasOut&&m.paths.out)s.push(['out',LIQ[r.id]||0xE8E2D0]);
+  (m.ambient||[]).forEach(a=>s.push(a));
+  m.streams=s;
+  const b=m.bubble;m.bubbleOn=!!b&&(b.on==='always'||(b.on==='gasIn'&&f.gasIn)||(b.on==='gasProd'&&f.gasProd)||(b.on==='gas'&&(f.gasIn||f.gasProd)));
+  const nStream=Math.floor(m.P.length*.6);
+  m.P.forEach((q,i)=>{q.k=i<nStream?(s.length?i%s.length:-1):-2;q.t=Math.random();q.y=0;});
+}
+function bubbleSpawn(m,q){const b=m.bubble;
+  if(b.pans){q.x=b.pans[Math.floor(Math.random()*b.pans.length)]+(Math.random()-.5)*1.4;q.z=(Math.random()-.5)*1.4;q.y=b.y0;return;}
+  if(b.box){q.x=b.box[0]+Math.random()*(b.box[1]-b.box[0]);q.z=(Math.random()-.5)*b.r*2;q.y=b.y0+Math.random()*.4;return;}
+  const a=Math.random()*6.283,rr=b.fill?Math.sqrt(Math.random())*b.r:b.r*(0.85+Math.random()*.3);q.x=(b.col_x||0)+Math.cos(a)*rr;q.z=Math.sin(a)*rr;q.y=b.y0;}
+function updatePlant(dt,t){
+  const m=curPlant;if(!m||!m.g.visible)return;
+  m.anim.forEach(fn=>fn(dt,t));
+  (m.flames||[]).forEach((f,i)=>{f.scale.setScalar(f.userData.s*(.85+.25*Math.sin(t*9+i*1.7)+.1*Math.random()));});
+  m.temp.forEach(mt=>{if(!m.tempEmissiveOnly)mt.emissiveIntensity=.2+.12*Math.sin(t*2.2)*(m.T>60?1:.4);});
+  const tmp=new THREE.Color();
+  m.P.forEach((q,i)=>{const j=i*3;
+    if(q.k===-2){
+      if(!m.bubbleOn){m.pos[j+1]=-999;return;}const b=m.bubble;
+      if(q.y===0||q.y>(b.pans?b.y0+1.4:b.y1))bubbleSpawn(m,q);
+      q.y+=dt*(b.pans?.9:1.2+q.s*.8);q.x+=Math.sin(t*3+i)*.003;
+      m.pos[j]=q.x;m.pos[j+1]=q.y;m.pos[j+2]=q.z;tmp.setHex(b.col||0xcfefff).multiplyScalar(.5);m.col[j]=tmp.r;m.col[j+1]=tmp.g;m.col[j+2]=tmp.b;return;}
+    if(q.k<0||!m.streams[q.k]){m.pos[j+1]=-999;return;}
+    const [name,hex]=m.streams[q.k],path=m.paths[name];if(!path){m.pos[j+1]=-999;return;}
+    q.t=(q.t+dt*(name==='loop'?.05:.22)*q.s)%1;const v=along(path,q.t);
+    const spread=name==='gasOut'&&m.type==='soil'?1.2:0;
+    m.pos[j]=v[0]+(spread?Math.sin(i*7.1)*spread*q.t:0);m.pos[j+1]=v[1];m.pos[j+2]=v[2]+(spread?Math.cos(i*3.3)*spread*q.t:0);
+    tmp.setHex(hex).multiplyScalar(.9);m.col[j]=tmp.r;m.col[j+1]=tmp.g;m.col[j+2]=tmp.b;});
+  m.geo.attributes.position.needsUpdate=true;m.geo.attributes.color.needsUpdate=true;
+}
+function showPlant(on){if(!on){Object.values(PLANTS).forEach(p=>p.g.visible=false);curPlant=null;}arrow.visible=!on;$('#legend').hidden=on;}
+function plantFit(){const m=getPlant(MODEL_OF[rx().id]||'stirred');const h=m.yr[1]-m.yr[0];
+  return {minx:m.xr[0]-.4,maxx:m.xr[1]+.4,H:Math.max(2,h-4.6),items:[],blocks:[]};}
+function plantLabels(c){
+  const r=rx(),{R}=species(),m=getPlant(MODEL_OF[r.id]||'stirred'),off=m.g.position.y;const kg=x=>nf(x,1)+' kg';
+  const solR=R.map((sp,i)=>({sp,i})).filter(o=>o.sp.st!=='g'),gasR=R.map((sp,i)=>({sp,i})).filter(o=>o.sp.st==='g');
+  let outL=[...c.prod.filter(x=>x.sp.st!=='g'),...c.exc.filter(x=>x.sp.st!=='g'&&x.kg>1e-6).map(x=>({...x,ex:1}))];
+  let outG=[...c.prod.filter(x=>x.sp.st==='g'),...c.exc.filter(x=>x.sp.st==='g'&&x.kg>1e-6).map(x=>({...x,ex:1}))];
+  if(m.allGasOut){outG=[...outG,...outL];outL=[];}
+  const L=[];const li=(k,h,cls)=>{const p=m.L[k];if(p)L.push({x:p[0],y:p[1]+off,html:h,cls:cls||''});};
+  li('title',`<b>${EQUIPO[r.id]||'Reactor'}</b>`);
+  const inName={ure:'Se aplica',resp:'Grano',cal:'Caliza',inv:'Jugo',met:'Residuos',fot:'Medio',bio:'Combustible',etc:'Combustible'}[r.id]||'Entra';
+  const airName={bio:'Aire y gas',etc:'Aire',fot:'CO₂ inyectado',resp:'Aire del ventilador'}[r.id]||'Aire';
+  const gasName={met:'Biogás',bio:'Gases de chimenea',etc:'Gases de chimenea',ure:'Se volatiliza',resp:'Aire de salida',fot:'Gas liberado',cal:'Gases del horno'}[r.id]||'Gases';
+  const outName={resp:'Queda en el grano',cal:'Cal viva',inv:'Miel',met:'Digestato',fot:'Cosecha'}[r.id]||'Sale';
+  if(solR.length)li('feed',inName+': '+solR.map(o=>kg(S.kg[o.i])+' '+fmtF(o.sp.f)).join(' + '));
+  if(gasR.length)li(m.paths.gasIn?'gasIn':'feed',airName+': '+gasR.map(o=>kg(S.kg[o.i])+' '+fmtF(o.sp.f)).join(' + '));
+  if(outG.length)li('gasOut',gasName+': '+outG.map(x=>kg(x.kg)+' '+fmtF(x.sp.f)+(x.ex?' (exceso)':'')).join('<br>+ '),outG.some(x=>x.ex)?'exc':'');
+  if(outL.length)li('out',outName+': '+outL.map(x=>kg(x.kg)+' '+fmtF(x.sp.f)+(x.ex?' (exceso)':'')).join('<br>+ '),outL.some(x=>x.ex)?'exc':'');
+  li('heat',`${c.Q<0?'Retirar':'Suministrar'} ${nf(Math.abs(c.Q),1)} MJ`);
+  labelData=L;labelsEl.innerHTML=L.map(l=>`<div class="lbl pl ${l.cls}" style="visibility:hidden">${l.html}</div>`).join('');
+  placeLabels();
+  const nt=$('#eqNote');if(nt)nt.innerHTML=`<b>${EQUIPO[r.id]}.</b> ${EQUIPO_NOTA[m.type]}`;
+}
+
 function init3D(){
   renderer=new THREE.WebGLRenderer({canvas,antialias:true});
   renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
@@ -617,7 +949,7 @@ function makeInst(it){
 let lastLayout=null;
 function setScene(spec){
   if(anim){anim.flyers.forEach(f=>world.remove(f.m));anim.halos.forEach(h=>world.remove(h));anim.neu.forEach(I=>world.remove(I.g));}
-  anim=null;freeze=false;arrow.visible=true;$('#burst').classList.remove('on');
+  anim=null;freeze=false;arrow.visible=true;$('#burst').classList.remove('on');Object.values(PLANTS).forEach(p=>p.g.visible=false);curPlant=null;$('#legend').hidden=false;
   insts.forEach(I=>world.remove(I.g));insts=[];
   const lay=computeLayout(spec);lastLayout=lay;
   lay.items.forEach(it=>{const I=makeInst(it);world.add(I.g);insts.push(I);});
@@ -711,13 +1043,14 @@ function loop(t){
   }
   arrow.position.y=Math.sin(ts*2)*.05;
   if(anim)stepAnim(t,dt);
-  updateFX(dt,ts);AU.tick();
+  updateFX(dt,ts);updatePlant(dt,ts);AU.tick();
   renderer.render(scene,camera);
   placeLabels();
   const h=stage.clientHeight,ppu=h/(2*view.dist*Math.tan(camera.fov*Math.PI/360));
-  const px=4.1*ppu;$('#sbar').style.width=px.toFixed(0)+'px';
+  if(S.mode==='plant'){$('#sbar').style.width=((curPlant?1/curPlant.mpu:2)*ppu).toFixed(0)+'px';$('#slbl').textContent='1 m · escala de planta';}
+  else{const px=4.1*ppu;$('#sbar').style.width=px.toFixed(0)+'px';
   const mag=(px*0.26e-3)/(0.5e-9);
-  $('#slbl').innerHTML='0,5 nm · aumento ≈ '+sci(mag,0);
+  $('#slbl').innerHTML='0,5 nm · aumento ≈ '+sci(mag,0);}
   scene.background.lerp(BG,.04);
 }
 
@@ -799,6 +1132,11 @@ function showResult(h){
   bar.innerHTML=`<span class="rk">${exo?'Exotérmica · libera calor':'Endotérmica · absorbe calor'}</span><span class="rv">${parts[0]}</span><span class="rd">${(parts[1]||'').replace('</small>','').replace(/(\d+) mol ([A-Za-z0-9()]+)/g,(m,n,f)=>n+' mol '+fmtF(f))}</span>`;
   void bar.offsetWidth;bar.classList.add('pop');
 }
+function plantResult(c){
+  const bar=$('#rbar'),exo=c.Q<0,{R}=species(),T=25+c.dT;
+  bar.className='rbar '+(exo?'exo':'endo');
+  bar.innerHTML=`<span class="rk">${exo?'Hay que retirar calor':'Hay que suministrar calor'}</span><span class="rv">Q = ${sgn(c.Q)} MJ</span><span class="rd">${nf(c.xi/1000,3)} kmol de reacción · reactivo límite ${fmtF(R[c.limIdx].f)} · ${T>=0?`sin intercambio de calor el medio llegaría a ${nf(T,0)} °C`:`sin suministrar calor la reacción no puede ocurrir: el medio tendría que enfriarse ${nf(-c.dT,0)} K`}</span>`;
+}
 function resetResult(){const bar=$('#rbar');bar.className='rbar';bar.innerHTML='<span class="rd">'+(S.mode==='reactor'?'Carga el reactor y pulsa «Reaccionar» para ver la energía liberada o absorbida.':'Balancea la ecuación y pulsa «Reaccionar» para ver el calor de reacción.')+'</span>';}
 
 /* ---------- Escenas por modo ---------- */
@@ -813,8 +1151,8 @@ function refreshScene(){
     if(S.reacted)return;
     setScene({L:R.map((sp,i)=>({sp,n:S.loads[i],kind:'solid',label:lblTerm(S.loads[i],sp)})),R:[]});
   }else{
-    const nu=rx().nu;
-    setScene({L:R.map((sp,i)=>({sp,n:nu[0][i],kind:'solid',label:lblTerm(nu[0][i],sp)})),R:P.map((sp,i)=>({sp,n:nu[1][i],kind:'solid',label:lblTerm(nu[1][i],sp)}))});
+    setScene({L:[],R:[]});showPlant(true);
+    lastLayout=plantFit();view.twx=0;fitCamera();
   }
   updateReactBtn();
 }
@@ -945,7 +1283,7 @@ function panelBalance(){
   if(st.ok){const e=dH(S.coef[0],S.coef[1]);
     energy=`<div class="sec"><h3>Calor de reacción <span class="chip ${e.d<0?'exo':'endo'}">${e.d<0?'Exotérmica':'Endotérmica'}</span></h3>
      ${energySVG(e.HR,e.HP)}
-     <p class="note">ΔH°<sub>r</sub> = Σν·ΔH°<sub>f</sub>(productos) − Σν·ΔH°<sub>f</sub>(reactivos) = <b class="num">${sgn(e.HP)} − (${sgn(e.HR)}) = ${sgn(e.d)} kJ</b> por la ecuación tal como está escrita.${st.minimal?'':' Si multiplicas los coeficientes, ΔH° se multiplica igual.'}</p></div>`;}
+     <p class="note"><button class="btn" type="button" onclick="document.getElementById('btnTabla').click()" style="margin:0 0 8px">Ver tabla de ΔH°f</button><br>ΔH°<sub>r</sub> = Σν·ΔH°<sub>f</sub>(productos) − Σν·ΔH°<sub>f</sub>(reactivos) = <b class="num">${sgn(e.HP)} − (${sgn(e.HR)}) = ${sgn(e.d)} kJ</b> por la ecuación tal como está escrita.${st.minimal?'':' Si multiplicas los coeficientes, ΔH° se multiplica igual.'}</p></div>`;}
   else energy=`<div class="sec"><h3>Calor de reacción</h3><p class="note">Balancea la ecuación para calcular ΔH°. Sin balance no hay cuentas de energía confiables.</p></div>`;
   return `${status}
    <div class="sec"><h3>Átomos por elemento <span class="s">reactivos · productos</span></h3>
@@ -1059,7 +1397,7 @@ function plantCalc(){
 function panelPlant(){
   const {R}=species();
   return `<div class="sec"><h3>Del reactor molecular a la planta</h3>
-    <p class="note">Escribe las masas que entran al equipo. La app calcula el reactivo límite, los productos, los excedentes y el calor que debes retirar o suministrar.</p></div>
+    <p class="note">Escribe las masas que entran al equipo. La app calcula el reactivo límite, los productos, los excedentes y el calor que debes retirar o suministrar.</p><p class="note" id="eqNote" style="margin-top:8px;color:var(--ink)"></p></div>
    <div class="sec" style="display:grid;gap:8px">
     ${R.map((sp,i)=>`<div class="inrow"><label for="kg${i}"><b>${fmtF(sp.f)}</b> ${sp.n} (kg)</label><input id="kg${i}" type="number" min="0" step="any" inputmode="decimal" value="${S.kg[i]}"></div>`).join('')}
     <div class="inrow"><label for="kgm">Masa que absorbe el calor (kg de agua o mosto, c<sub>p</sub> ≈ 4,18 kJ/kg·K)</label><input id="kgm" type="number" min="1" step="any" inputmode="decimal" value="${S.medium}"></div>
@@ -1072,6 +1410,7 @@ function bindPlant(){
 }
 function plantUpdate(){
   const c=plantCalc(),{R,P}=species();
+  if(S.mode==='plant'){configurePlant(c);plantLabels(c);plantResult(c);}
   const inKg=R.reduce((s,sp,i)=>s+Math.max(0,S.kg[i]),0);
   const outKg=c.prod.reduce((s,p)=>s+p.kg,0)+c.exc.reduce((s,x)=>s+x.kg,0);
   const allSp=[...R,...P];const col=k=>SCOL[allSp.findIndex(s=>s.key===k)%SCOL.length];
@@ -1084,7 +1423,7 @@ function plantUpdate(){
   const T=25+c.dT;const Tc=Math.max(0,Math.min(100,T));const frac=Tc/100;
   const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));const cc=mix([30,58,138],[215,38,61],frac);
   const tubeH=140,fillH=tubeH*frac;
-  const warn=T>100?'<p class="note" style="color:var(--exo)">Por encima de 100 °C: en la práctica el agua herviría. Este calor se aprovecha para generar vapor o debe retirarse con un sistema de enfriamiento.</p>':T<0?'<p class="note" style="color:var(--endo)">Por debajo de 0 °C: el medio no podría suministrar tanto calor; hace falta una fuente externa (horno, vapor).</p>':'';
+  const warn=T>100?'<p class="note" style="color:var(--exo)">Por encima de 100 °C: en la práctica el agua herviría. Este calor se aprovecha para generar vapor o debe retirarse con un sistema de enfriamiento.</p>':T<0?`<p class="note" style="color:var(--endo)">El medio tendría que enfriarse ${nf(-c.dT,0)} K, algo imposible${T<-273.15?' (quedaría por debajo del cero absoluto)':''}: sin una fuente externa de calor (horno, vapor, sol) la reacción no avanza.</p>`:'';
   $('#pres').innerHTML=`
    <div class="kv">
     <div><dt>Avance <span style="text-transform:none">ξ</span></dt><dd class="num">${nf(c.xi/1000,3)} <small>kmol</small></dd></div>
@@ -1097,7 +1436,7 @@ function plantUpdate(){
     <div class="massbars" style="margin-top:10px">
      <div class="mb"><span>Entradas</span><div class="track">${seg(inList)}</div></div>
      <div class="mb"><span>Salidas</span><div class="track">${seg(outList)}</div></div>
-     <div class="mlegend">${allSp.map(sp=>`<span><i style="background:${col(sp.key)}"></i>${fmtF(sp.f)}</span>`).join('')}</div>
+     <div class="mlegend">${allSp.map(sp=>`<span><i style="background:${col(sp.key)}"></i><span>${fmtF(sp.f)}</span></span>`).join('')}</div>
     </div>
     <p class="note" style="margin-top:6px">La masa que entra es igual a la que sale (productos + excedentes): ley de conservación de la masa.</p></div>
    <div class="sec"><h3>Efecto térmico en el equipo <span class="chip ${c.Q<0?'exo':'endo'}">${c.Q<0?'Hay que retirar calor':'Hay que suministrar calor'}</span></h3>
@@ -1108,7 +1447,7 @@ function plantUpdate(){
       <circle cx="30" cy="176" r="16" fill="rgb(${cc})" stroke="var(--line)"/>
       <text x="44" y="22" font-size="9" class="mut">100</text><text x="44" y="${14+tubeH+8}" font-size="9" class="mut">0</text>
      </svg>
-     <div><div style="font-family:var(--f-display);font-weight:800;font-size:2rem;color:rgb(${cc})" class="num">${nf(T,1)} °C</div>
+     <div><div style="font-family:var(--f-display);font-weight:800;font-size:2rem;color:rgb(${cc})" class="num">${T<0?'&lt; 0':nf(T,1)} °C</div>
       <p class="note">Si el medio parte de 25 °C y no hay intercambio con el exterior, su temperatura cambia en <b class="num">${sgn(c.dT)} K</b>. ΔT = −Q / (m·c<sub>p</sub>).</p>${warn}</div>
     </div></div>
    <div class="sec"><h3>Diagrama de entalpía <span class="s">por mol de reacción</span></h3>${energySVG(c.e.HR,c.e.HP)}</div>`;
@@ -1116,6 +1455,47 @@ function plantUpdate(){
 
 /* ---------- utilidades ---------- */
 let tt;function toast(m,ms=3800){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),ms);}
+
+
+/* ---------- Tabla de entalpías de formación ---------- */
+const FUENTES={1:'NIST Chemistry WebBook, SRD 69. doi:10.18434/T4D303',2:'Salmon y Dalmazzone (2006), J. Phys. Chem. Ref. Data 35, 1443. doi:10.1063/1.2203111',
+  3:'Miller y Smith-Magowan (1990), J. Phys. Chem. Ref. Data 19, 1049. doi:10.1063/1.555878',4:'Valores clave CODATA (Cox, Wagman y Medvedev, 1989). Sin DOI.',
+  5:'CRC Handbook of Chemistry and Physics (valores NBS, Wagman et al., 1982). Sin DOI verificado.'};
+const TABLA=[
+ ['Glucosa','C6H12O6','s',-1273.3,'Fermentaciones, respiración',[2],'glu'],
+ ['Fructosa','C6H12O6','s',-1265.6,'Frutas, miel, jarabes',[2],'fru'],
+ ['Sacarosa','C12H22O11','s',-2226.1,'Caña de azúcar, panela',[2],'sac'],
+ ['Lactosa (β)','C12H22O11','s',-2236.7,'Leche, lactosuero',[2,1],'lacto'],
+ ['Etanol','C2H5OH','l',-277.6,'Bebidas, bioetanol',[1],'eth'],
+ ['Ácido acético','CH3COOH','l',-483.5,'Vinagre, fermentación del cacao',[1],'ace'],
+ ['Ácido láctico (L)','C3H6O3','s',-694.1,'Lácteos, ensilaje, bioplástico PLA',[1,3],'lac'],
+ ['Ácido cítrico monohidratado','C6H8O7·H2O','s',-1837.5,'Acidulante de bebidas y conservas',[2],''],
+ ['Ácido palmítico','C16H32O2','s',-891.5,'Aceite de palma, grasas',[2],''],
+ ['Urea','CO(NH2)2','s',-333.1,'Fertilizante nitrogenado',[1],'ure'],
+ ['Metano','CH4','g',-74.6,'Biogás',[1],'ch4'],
+ ['Dióxido de carbono','CO2','g',-393.5,'Fermentación, respiración, combustión',[4],'co2'],
+ ['Agua','H2O','l',-285.8,'Medio de reacción, producto de oxidaciones',[4],'h2o'],
+ ['Vapor de agua','H2O','g',-241.8,'Secado, combustión (poder calorífico inferior)',[4],''],
+ ['Amoníaco','NH3','g',-45.9,'Fertilización, volatilización de la urea',[4],'nh3'],
+ ['Oxígeno','O2','g',0,'Aire de fermentación y combustión',[],'o2'],
+ ['Nitrógeno','N2','g',0,'Aire (no reacciona)',[],''],
+ ['Carbonato de calcio','CaCO3','s',-1207.6,'Caliza, cal agrícola',[5],'caco3'],
+ ['Óxido de calcio','CaO','s',-634.9,'Cal viva, clarificación de jugo de caña',[5],'cao'],
+];
+function renderTabla(q){
+  const keys=new Set([...rx().R,...rx().P]);q=(q||'').trim().toLowerCase();
+  const rows=TABLA.filter(t=>!q||(t[0]+' '+t[1]+' '+t[4]).toLowerCase().includes(q)).map(t=>{
+    const hl=t[6]&&keys.has(t[6]);
+    return `<tr class="${hl?'hl':''}"><td>${t[0]}${hl?' <span class="chip lim" style="background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)">en esta reacción</span>':''}</td><td class="fm">${fmtF(t[1])}</td><td>${ST[t[2]]}</td><td class="num"><b>${t[3]===0?'0':sgn(t[3])}</b></td><td class="uso">${t[4]}</td><td>${t[5].map(n=>'['+n+']').join(' ')||'—'}</td></tr>`;}).join('');
+  $('#mBody').innerHTML=rows||'<tr><td colspan="6">Ningún compuesto coincide con la búsqueda.</td></tr>';
+}
+function openTabla(){const m=$('#modal');m.hidden=false;renderTabla($('#mSearch').value);AU.pick();setTimeout(()=>$('#mSearch').focus(),30);}
+function closeTabla(){$('#modal').hidden=true;}
+$('#btnTabla').onclick=openTabla;$('#mClose').onclick=closeTabla;
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeTabla();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').hidden)closeTabla();});
+$('#mSearch').oninput=e=>renderTabla(e.target.value);
+$('#mSrc').innerHTML=Object.entries(FUENTES).map(([k,v])=>`<li>[${k}] ${v}</li>`).join('');
 
 init3D();selectRx(0);
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude/.test(location.host)){try{
